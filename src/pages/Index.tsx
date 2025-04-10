@@ -1,16 +1,18 @@
 
-import TextRewriter from "@/components/TextRewriter";
+"use client";
 
-export default function Index() {
+import React from 'react';
+import TextRewriter from '@/components/text-rewriter/TextRewriter';
+
+const Index: React.FC = () => {
   return (
-    <div 
-      className="min-h-screen w-full p-4"
-      style={{
-        backgroundImage: 'linear-gradient(to right, rgba(0, 0, 0, 0.02) 1px, transparent 1px)',
-        backgroundSize: '20px 100%'
-      }}
-    >
-      <TextRewriter />
+    <div className="min-h-screen bg-background py-8">
+      <div className="container mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-8">AI Text Rewriter</h1>
+        <TextRewriter />
+      </div>
     </div>
   );
-}
+};
+
+export default Index;
