@@ -90,6 +90,22 @@ function createPrompt(text: string, tone: Tone, length: Length) {
   return { systemPrompt, userPrompt };
 }
 
+// Helper function to calculate appropriate max tokens based on input length
+function calculateMaxTokens(text: string, length: Length): number {
+  // Rough estimate: 1 token ≈ 4 characters in English
+  const estimatedInputTokens = Math.ceil(text.length / 4);
+  
+  // Adjust based on desired output length
+  switch (length) {
+    case 'Shorter':
+      return Math.max(50, Math.floor(estimatedInputTokens * 0.7));
+    case 'Same':
+      return Math.max(100, Math.floor(estimatedInputTokens * 1.2));
+    case 'Longer':
+      return Math.max(150, Math.floor(estimatedInputTokens * 2));
+  }
+}
+
 // Function to stream responses from OpenAI
 export async function* streamTextRewrite(
   text: string,
@@ -121,6 +137,7 @@ export async function* streamTextRewrite(
         }
       ],
       temperature: 0.7,
+      max_tokens: calculateMaxTokens(text, length),
       stream: true
     });
     
