@@ -102,7 +102,7 @@ const TextRewriter: React.FC = () => {
 
   const handleExampleSelect = (text: string) => {
     setInputText(text);
-    toast.info("Example loaded into text area.");
+    // Removed toast notification when loading an example
   };
 
   // Define a more subtle text shadow style
