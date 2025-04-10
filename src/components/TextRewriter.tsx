@@ -63,9 +63,10 @@ const TextRewriter: React.FC = () => {
       </div>
 
       <Card>
-        {/* Use flex for layout, responsive direction, and gap */}
-        <CardContent className="p-4 md:p-6 flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+        {/* Changed items-start to items-center */}
+        <CardContent className="p-4 md:p-6 flex flex-col md:flex-row gap-6 md:gap-8 items-center">
           {/* Textarea Section (takes up more space) */}
+          {/* Removed h-full to allow natural height based on rows */}
           <div className="space-y-2 w-full md:flex-1">
             <Label htmlFor="input-text" className="sr-only">Your Text</Label>
             <Textarea
@@ -73,13 +74,13 @@ const TextRewriter: React.FC = () => {
               placeholder="Paste your text here..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              rows={12} // Increased rows slightly for better vertical space
-              className="resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full h-full min-h-[240px] md:min-h-[320px]" // Adjusted min-height
+              rows={12}
+              className="resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full min-h-[240px] md:min-h-[320px]" // Keep min-height for consistency
             />
           </div>
 
           {/* ToneLengthSelector & Button Section */}
-          {/* Make this a flex column to stack selector and button */}
+          {/* Ensure this column also aligns items appropriately if needed */}
           <div className="w-full md:w-auto flex flex-col items-center md:items-stretch gap-4">
              <ToneLengthSelector
                selectedTone={selectedTone}
@@ -109,8 +110,6 @@ const TextRewriter: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Removed the Button container from outside the card */}
     </div>
   );
 };
