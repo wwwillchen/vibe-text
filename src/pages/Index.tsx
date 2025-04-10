@@ -10,7 +10,7 @@ const Index = () => {
         <TextRewriter />
         
         <footer className="mt-12 text-center text-sm text-gray-500">
-          <p>Powered by OpenAI API • Enter your API key to use the service</p>
+          <p>Powered by OpenAI API • Your API key is stored locally in your browser</p>
           <p className="mt-1">
             <a 
               href="https://platform.openai.com/api-keys" 

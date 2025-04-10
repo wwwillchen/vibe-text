@@ -1,22 +1,30 @@
 
 import OpenAI from 'openai';
 
-// Initialize the OpenAI client
-// Note: The API key should be set as an environment variable
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY, // This expects the API key to be set in .env file
-  dangerouslyAllowBrowser: true // Only for demo purposes, in production use a backend
-});
-
 type Tone = 'Casual' | 'Neutral' | 'Professional';
 type Length = 'Shorter' | 'Same' | 'Longer';
+
+// Initialize OpenAI with the user-provided API key
+function getOpenAIClient(apiKey: string) {
+  return new OpenAI({
+    apiKey: apiKey,
+    dangerouslyAllowBrowser: true // Only for demo purposes, in production use a backend
+  });
+}
 
 export async function rewriteTextWithOpenAI(
   text: string, 
   tone: Tone, 
-  length: Length
+  length: Length,
+  apiKey: string
 ): Promise<string> {
+  if (!apiKey) {
+    throw new Error("API key is required");
+  }
+
   try {
+    const openai = getOpenAIClient(apiKey);
+    
     // Create a prompt based on the selected tone and length
     const prompt = createPrompt(text, tone, length);
     
@@ -102,9 +110,16 @@ function calculateMaxTokens(text: string, length: Length): number {
 export async function* streamTextRewrite(
   text: string,
   tone: Tone,
-  length: Length
+  length: Length,
+  apiKey: string
 ): AsyncGenerator<string> {
+  if (!apiKey) {
+    throw new Error("API key is required");
+  }
+
   try {
+    const openai = getOpenAIClient(apiKey);
+    
     // Create a prompt based on the selected tone and length
     const prompt = createPrompt(text, tone, length);
     

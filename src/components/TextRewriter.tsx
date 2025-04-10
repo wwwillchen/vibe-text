@@ -1,11 +1,11 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,12 +14,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import ToneLengthSelector from './ToneLengthSelector';
-import { Loader2, Sparkles, BookOpen, KeyRound } from 'lucide-react';
+import { Loader2, Sparkles, BookOpen, KeyRound, Info } from 'lucide-react';
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { rewriteTextWithOpenAI, streamTextRewrite } from "@/lib/openai-service";
+import { streamTextRewrite } from "@/lib/openai-service";
 
 type Tone = 'Casual' | 'Neutral' | 'Professional';
 type Length = 'Shorter' | 'Same' | 'Longer';
@@ -52,7 +61,8 @@ const TextRewriter: React.FC = () => {
   const [selectedLength, setSelectedLength] = useState<Length>('Same');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [apiKey, setApiKey] = useState<string>('');
-  const [showApiKeyInput, setShowApiKeyInput] = useState<boolean>(false);
+  const [showApiKeyDialog, setShowApiKeyDialog] = useState<boolean>(false);
+  const [tempApiKey, setTempApiKey] = useState<string>('');
   
   // Check for API key in localStorage on component mount
   useEffect(() => {
@@ -60,20 +70,9 @@ const TextRewriter: React.FC = () => {
     if (savedApiKey) {
       setApiKey(savedApiKey);
     } else {
-      setShowApiKeyInput(true);
+      setShowApiKeyDialog(true);
     }
   }, []);
-
-  // Save API key to localStorage when it changes
-  useEffect(() => {
-    if (apiKey) {
-      localStorage.setItem('openai_api_key', apiKey);
-      // Set the API key in the environment
-      window.process = window.process || {};
-      window.process.env = window.process.env || {};
-      window.process.env.VITE_OPENAI_API_KEY = apiKey;
-    }
-  }, [apiKey]);
 
   const handleRewrite = async () => {
     if (!inputText.trim()) {
@@ -83,7 +82,7 @@ const TextRewriter: React.FC = () => {
     
     if (!apiKey) {
       toast.error("Please enter your OpenAI API key.");
-      setShowApiKeyInput(true);
+      setShowApiKeyDialog(true);
       return;
     }
     
@@ -92,8 +91,8 @@ const TextRewriter: React.FC = () => {
     setDisplayText('');
     
     try {
-      // Use the streaming API
-      const streamGenerator = streamTextRewrite(inputText, selectedTone, selectedLength);
+      // Use the streaming API with the user-provided API key
+      const streamGenerator = streamTextRewrite(inputText, selectedTone, selectedLength, apiKey);
       
       for await (const chunk of streamGenerator) {
         setDisplayText(chunk);
@@ -119,9 +118,11 @@ const TextRewriter: React.FC = () => {
     setDisplayText('');
   };
 
-  const handleApiKeySubmit = () => {
-    if (apiKey.trim()) {
-      setShowApiKeyInput(false);
+  const handleApiKeySave = () => {
+    if (tempApiKey.trim()) {
+      setApiKey(tempApiKey);
+      localStorage.setItem('openai_api_key', tempApiKey);
+      setShowApiKeyDialog(false);
       toast.success("API key saved!");
     } else {
       toast.error("Please enter a valid API key.");
@@ -151,33 +152,61 @@ const TextRewriter: React.FC = () => {
             Rewrite your text with the desired tone and length using OpenAI
           </CardDescription>
           
-          {/* API Key Input */}
-          {showApiKeyInput && (
-            <div className="mt-4 flex flex-col sm:flex-row gap-2 items-center justify-center">
-              <div className="relative flex-1 max-w-md">
-                <Input
-                  type="password"
-                  placeholder="Enter your OpenAI API key"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  className="pr-10"
-                />
-                <KeyRound className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              </div>
-              <Button onClick={handleApiKeySubmit} size="sm">
-                Save Key
+          {/* API Key Dialog */}
+          <Dialog open={showApiKeyDialog} onOpenChange={setShowApiKeyDialog}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2"
+                onClick={() => {
+                  setTempApiKey(apiKey);
+                  setShowApiKeyDialog(true);
+                }}
+              >
+                <KeyRound className="mr-2 h-4 w-4" />
+                {apiKey ? "Change API Key" : "Set API Key"}
               </Button>
-            </div>
-          )}
-          
-          {!showApiKeyInput && (
-            <button 
-              onClick={() => setShowApiKeyInput(true)}
-              className="text-xs text-muted-foreground hover:text-primary mt-2 underline underline-offset-4"
-            >
-              Change API Key
-            </button>
-          )}
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>OpenAI API Key</DialogTitle>
+                <DialogDescription>
+                  Enter your OpenAI API key to use the text rewriting service. Your key is stored locally in your browser and never sent to our servers.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex items-center space-x-2 py-4">
+                <div className="grid flex-1 gap-2">
+                  <Label htmlFor="api-key" className="sr-only">
+                    API Key
+                  </Label>
+                  <Input
+                    id="api-key"
+                    type="password"
+                    placeholder="sk-..."
+                    value={tempApiKey}
+                    onChange={(e) => setTempApiKey(e.target.value)}
+                  />
+                </div>
+              </div>
+              <DialogFooter className="sm:justify-between">
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Info className="h-3 w-3 mr-1" />
+                  <a 
+                    href="https://platform.openai.com/api-keys" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline hover:text-primary"
+                  >
+                    Get an API key
+                  </a>
+                </div>
+                <Button type="submit" onClick={handleApiKeySave}>
+                  Save
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </CardHeader>
 
         <CardContent className="p-4 pt-0 md:p-6 md:pt-0 flex flex-col md:flex-row gap-6 md:gap-8 items-center">
@@ -275,6 +304,12 @@ const TextRewriter: React.FC = () => {
             </Button>
           </div>
         </CardContent>
+        
+        <CardFooter className="px-6 py-4 text-center text-sm text-muted-foreground">
+          <p className="w-full">
+            This app uses the OpenAI API to rewrite text. Your API key is stored locally in your browser.
+          </p>
+        </CardFooter>
       </Card>
     </div>
   );
