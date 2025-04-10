@@ -134,7 +134,7 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
       <div
         ref={boxRef}
         className={cn(
-          "relative w-64 h-64 rounded-md cursor-pointer overflow-hidden touch-none", // Increased size
+          "relative w-64 h-64 rounded-md cursor-pointer overflow-hidden touch-none",
           "bg-gradient-to-br from-blue-100/50 via-purple-100/50 to-pink-100/50",
           "border border-muted"
         )}
@@ -147,12 +147,12 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
         onTouchEnd={handleTouchEnd}
       >
         {/* Y-axis Labels (Tone) - Positioned Inside */}
-        <Label className="absolute left-2 top-2 text-xs text-muted-foreground transform -translate-y-1/2">Professional</Label>
-        <Label className="absolute left-2 bottom-2 text-xs text-muted-foreground transform translate-y-1/2">Casual</Label>
+        <Label className="absolute left-2 top-2 text-xs text-muted-foreground">Professional</Label>
+        <Label className="absolute left-2 bottom-2 text-xs text-muted-foreground">Casual</Label>
         
         {/* X-axis Labels (Length) - Positioned Inside */}
-        <Label className="absolute top-2 left-2 text-xs text-muted-foreground transform -translate-x-1/2 rotate-[-90deg] origin-top-left whitespace-nowrap" style={{ top: '50%', left: '8px' }}>Shorter</Label>
-        <Label className="absolute top-2 right-2 text-xs text-muted-foreground transform translate-x-1/2 rotate-[90deg] origin-top-right whitespace-nowrap" style={{ top: '50%', right: '8px' }}>Longer</Label>
+        <Label className="absolute bottom-2 left-1/4 text-xs text-muted-foreground transform -translate-x-1/2">Shorter</Label>
+        <Label className="absolute bottom-2 right-1/4 text-xs text-muted-foreground transform translate-x-1/2">Longer</Label>
 
         {/* Selection Indicator */}
         <div
