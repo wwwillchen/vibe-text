@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-// Import DropdownMenu components
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,9 +15,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ToneLengthSelector from './ToneLengthSelector';
-import { Loader2, Sparkles, BookOpen } from 'lucide-react'; // Added BookOpen icon
+import { Loader2, Sparkles, BookOpen, KeyRound } from 'lucide-react';
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { rewriteTextWithOpenAI, streamTextRewrite } from "@/lib/openai-service";
 
 type Tone = 'Casual' | 'Neutral' | 'Professional';
 type Length = 'Shorter' | 'Same' | 'Longer';
@@ -43,165 +44,94 @@ const cannedExamples = [
   }
 ];
 
-const rewriteText = async (text: string, tone: Tone, length: Length): Promise<string> => {
-  console.log(`Rewriting text with Tone: ${tone}, Length: ${length}`);
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  // Simple mock response based on tone/length
-  let prefix = `(Rewritten - Tone: ${tone}, Length: ${length})\n\n`;
-  let modifiedText = text;
-
-  if (length === 'Shorter') {
-    modifiedText = text.split('.').slice(0, Math.max(1, Math.floor(text.split('.').length / 2))).join('.') + (text.includes('.') ? '.' : '');
-  } else if (length === 'Longer') {
-    modifiedText = text + "\n\nAdditionally, we should consider the implications for future projects and ensure alignment across teams.";
-  }
-
-  if (tone === 'Casual') {
-    modifiedText = modifiedText.replace(/Regards/gi, 'Cheers').replace(/Sincerely/gi, 'Best').replace(/following up/gi, 'just checking in');
-    prefix = `(Casual rewrite - ${length})\n\nYo! `;
-  } else if (tone === 'Professional') {
-     modifiedText = modifiedText.replace(/Hey/gi, 'Dear Sir/Madam').replace(/Cheers/gi, 'Sincerely').replace(/just checking in/gi, 'following up');
-     prefix = `(Professional rewrite - ${length})\n\nEsteemed Colleague,\n\n`;
-  }
-
-  return prefix + modifiedText;
-};
-
 const TextRewriter: React.FC = () => {
   const [inputText, setInputText] = useState<string>('');
   const [displayText, setDisplayText] = useState<string>('');
-  const [fullText, setFullText] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [selectedTone, setSelectedTone] = useState<Tone>('Neutral');
   const [selectedLength, setSelectedLength] = useState<Length>('Same');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [apiKey, setApiKey] = useState<string>('');
+  const [showApiKeyInput, setShowApiKeyInput] = useState<boolean>(false);
   
-  // Reference to store the streaming interval
-  const streamingIntervalRef = useRef<number | null>(null);
-
-  // Clean up interval on component unmount
+  // Check for API key in localStorage on component mount
   useEffect(() => {
-    return () => {
-      if (streamingIntervalRef.current) {
-        clearInterval(streamingIntervalRef.current);
-      }
-    };
+    const savedApiKey = localStorage.getItem('openai_api_key');
+    if (savedApiKey) {
+      setApiKey(savedApiKey);
+    } else {
+      setShowApiKeyInput(true);
+    }
   }, []);
 
-  // Effect to handle text streaming animation
+  // Save API key to localStorage when it changes
   useEffect(() => {
-    if (isStreaming && fullText) {
-      let currentIndex = 0;
-      
-      // Clear any existing interval
-      if (streamingIntervalRef.current) {
-        clearInterval(streamingIntervalRef.current);
-      }
-      
-      // Set initial empty display text
-      setDisplayText('');
-      
-      // Create new interval for streaming effect
-      const intervalId = window.setInterval(() => {
-        if (currentIndex < fullText.length) {
-          // Add next character to display text
-          setDisplayText(prev => prev + fullText[currentIndex]);
-          currentIndex++;
-          
-          // Vary the typing speed slightly for a more natural effect
-          if (currentIndex % 10 === 0) {
-            clearInterval(intervalId);
-            setTimeout(() => {
-              streamingIntervalRef.current = window.setInterval(intervalCallback, getRandomTypingSpeed());
-            }, getRandomPauseLength());
-          }
-        } else {
-          // End streaming when complete
-          setIsStreaming(false);
-          clearInterval(intervalId);
-          streamingIntervalRef.current = null;
-        }
-      }, getRandomTypingSpeed());
-      
-      // Store interval ID for cleanup
-      streamingIntervalRef.current = intervalId;
-      
-      // Callback function for the interval
-      function intervalCallback() {
-        if (currentIndex < fullText.length) {
-          setDisplayText(prev => prev + fullText[currentIndex]);
-          currentIndex++;
-        } else {
-          setIsStreaming(false);
-          clearInterval(streamingIntervalRef.current!);
-          streamingIntervalRef.current = null;
-        }
-      }
+    if (apiKey) {
+      localStorage.setItem('openai_api_key', apiKey);
+      // Set the API key in the environment
+      window.process = window.process || {};
+      window.process.env = window.process.env || {};
+      window.process.env.VITE_OPENAI_API_KEY = apiKey;
     }
-  }, [isStreaming, fullText]);
-
-  // Helper functions for random typing speeds
-  const getRandomTypingSpeed = () => {
-    // Return a random number between 15-40ms for typing speed
-    return Math.floor(Math.random() * 25) + 15;
-  };
-  
-  const getRandomPauseLength = () => {
-    // Occasionally pause for 100-300ms (simulating thinking)
-    return Math.floor(Math.random() * 200) + 100;
-  };
+  }, [apiKey]);
 
   const handleRewrite = async () => {
     if (!inputText.trim()) {
       toast.warning("Please enter some text to rewrite.");
-      console.warn("Input text is empty.");
+      return;
+    }
+    
+    if (!apiKey) {
+      toast.error("Please enter your OpenAI API key.");
+      setShowApiKeyInput(true);
       return;
     }
     
     setIsLoading(true);
+    setIsStreaming(true);
+    setDisplayText('');
+    
     try {
-      // Get the rewritten text
-      const result = await rewriteText(inputText, selectedTone, selectedLength);
+      // Use the streaming API
+      const streamGenerator = streamTextRewrite(inputText, selectedTone, selectedLength);
       
-      // Store the full text but don't display it yet
-      setFullText(result);
-      
-      // Start streaming animation
-      setIsStreaming(true);
+      for await (const chunk of streamGenerator) {
+        setDisplayText(chunk);
+      }
       
       toast.success("Text rewritten successfully!");
     } catch (error) {
       console.error("Error rewriting text:", error);
-      toast.error("Error: Could not rewrite text.");
+      toast.error("Error: Could not rewrite text. Check your API key and try again.");
     } finally {
       setIsLoading(false);
+      setIsStreaming(false);
     }
   };
 
   const handleToneLengthSelect = (tone: Tone, length: Length) => {
     setSelectedTone(tone);
     setSelectedLength(length);
-    console.log(`Selected Tone: ${tone}, Length: ${length}`);
   };
 
   const handleExampleSelect = (text: string) => {
-    // Stop any ongoing streaming
-    if (streamingIntervalRef.current) {
-      clearInterval(streamingIntervalRef.current);
-      streamingIntervalRef.current = null;
-      setIsStreaming(false);
-    }
-    
     setInputText(text);
-    setDisplayText(text);
-    setFullText('');
+    setDisplayText('');
+  };
+
+  const handleApiKeySubmit = () => {
+    if (apiKey.trim()) {
+      setShowApiKeyInput(false);
+      toast.success("API key saved!");
+    } else {
+      toast.error("Please enter a valid API key.");
+    }
   };
 
   // Define a more subtle text shadow style
   const textShadowStyle = { textShadow: '0px 1px 1px rgba(0, 0, 0, 0.05)' };
 
-  // Placeholder text (can be kept or removed)
+  // Placeholder text
   const placeholderText = `Paste your text here, or load an example...`;
 
   return (
@@ -218,8 +148,36 @@ const TextRewriter: React.FC = () => {
             className="text-sm text-muted-foreground"
             style={textShadowStyle}
           >
-            Rewrite your text with the desired tone and length
+            Rewrite your text with the desired tone and length using OpenAI
           </CardDescription>
+          
+          {/* API Key Input */}
+          {showApiKeyInput && (
+            <div className="mt-4 flex flex-col sm:flex-row gap-2 items-center justify-center">
+              <div className="relative flex-1 max-w-md">
+                <Input
+                  type="password"
+                  placeholder="Enter your OpenAI API key"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  className="pr-10"
+                />
+                <KeyRound className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              </div>
+              <Button onClick={handleApiKeySubmit} size="sm">
+                Save Key
+              </Button>
+            </div>
+          )}
+          
+          {!showApiKeyInput && (
+            <button 
+              onClick={() => setShowApiKeyInput(true)}
+              className="text-xs text-muted-foreground hover:text-primary mt-2 underline underline-offset-4"
+            >
+              Change API Key
+            </button>
+          )}
         </CardHeader>
 
         <CardContent className="p-4 pt-0 md:p-6 md:pt-0 flex flex-col md:flex-row gap-6 md:gap-8 items-center">
@@ -250,30 +208,43 @@ const TextRewriter: React.FC = () => {
               </DropdownMenu>
             </div>
 
-            <Label htmlFor="input-text" className="sr-only">Your Text</Label>
-            <Textarea
-              id="input-text"
-              placeholder={placeholderText}
-              value={isStreaming ? displayText : inputText}
-              onChange={(e) => {
-                if (!isStreaming) {
-                  setInputText(e.target.value);
-                  setDisplayText(e.target.value);
-                }
-              }}
-              readOnly={isStreaming}
-              rows={12}
-              className={cn(
-                "resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full min-h-[240px] md:min-h-[320px]",
-                isStreaming && "cursor-default"
-              )}
-            />
-            {isStreaming && (
-              <div className="text-xs text-muted-foreground mt-1 flex items-center">
-                <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                <span>Streaming response...</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Input Text */}
+              <div>
+                <Label htmlFor="input-text" className="text-sm font-medium mb-1 block">Original Text</Label>
+                <Textarea
+                  id="input-text"
+                  placeholder={placeholderText}
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  disabled={isLoading || isStreaming}
+                  rows={12}
+                  className="resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full min-h-[240px] md:min-h-[320px]"
+                />
               </div>
-            )}
+              
+              {/* Output Text */}
+              <div>
+                <Label htmlFor="output-text" className="text-sm font-medium mb-1 block">Rewritten Text</Label>
+                <Textarea
+                  id="output-text"
+                  placeholder="Rewritten text will appear here..."
+                  value={displayText}
+                  readOnly
+                  rows={12}
+                  className={cn(
+                    "resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full min-h-[240px] md:min-h-[320px]",
+                    isStreaming && "animate-pulse"
+                  )}
+                />
+                {isStreaming && (
+                  <div className="text-xs text-muted-foreground mt-1 flex items-center">
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                    <span>Streaming response...</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* ToneLengthSelector & Button Section */}
@@ -285,7 +256,7 @@ const TextRewriter: React.FC = () => {
              />
              <Button
                onClick={handleRewrite}
-               disabled={isLoading || isStreaming || !inputText.trim()}
+               disabled={isLoading || isStreaming || !inputText.trim() || !apiKey}
                className={cn(
                  "w-full h-11 px-8 text-base",
                  "bg-pink-500 text-white",

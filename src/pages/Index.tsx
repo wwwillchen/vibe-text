@@ -1,11 +1,28 @@
 
-import TextRewriter from "@/components/TextRewriter";
+import React from 'react';
+import TextRewriter from '@/components/TextRewriter';
 
 const Index = () => {
   return (
-    // Added background classes here for pinstripes
-    <div className="min-h-screen w-full bg-white bg-[repeating-linear-gradient(45deg,_theme(colors.slate.100)_0,_theme(colors.slate.100)_1px,_transparent_1px,_transparent_16px)] py-8">
-      <TextRewriter />
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="container mx-auto px-4">
+        <h1 className="text-3xl font-bold text-center mb-8">AI Text Rewriter</h1>
+        <TextRewriter />
+        
+        <footer className="mt-12 text-center text-sm text-gray-500">
+          <p>Powered by OpenAI API • Enter your API key to use the service</p>
+          <p className="mt-1">
+            <a 
+              href="https://platform.openai.com/api-keys" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline hover:text-gray-700"
+            >
+              Get an API key from OpenAI
+            </a>
+          </p>
+        </footer>
+      </div>
     </div>
   );
 };

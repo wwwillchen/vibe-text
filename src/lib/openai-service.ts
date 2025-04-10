@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 // Initialize the OpenAI client
 // Note: The API key should be set as an environment variable
 const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY, // This expects the API key to be set in .env.local
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY, // This expects the API key to be set in .env file
   dangerouslyAllowBrowser: true // Only for demo purposes, in production use a backend
 });
 
@@ -48,7 +48,6 @@ export async function rewriteTextWithOpenAI(
 
 // Helper function to create appropriate prompts based on tone and length
 function createPrompt(text: string, tone: Tone, length: Length) {
-  // Base system prompt
   let systemPrompt = "You are an expert writing assistant that rewrites text to match specific tones and lengths while maintaining the original meaning.";
   
   // Add tone-specific instructions
@@ -77,26 +76,25 @@ function createPrompt(text: string, tone: Tone, length: Length) {
       break;
   }
   
-  // User prompt is simply the text to rewrite
+  // Create the user prompt
   const userPrompt = `Please rewrite the following text:\n\n${text}`;
   
   return { systemPrompt, userPrompt };
 }
 
-// Helper function to calculate max tokens based on input length and desired output length
+// Helper function to calculate appropriate max tokens based on input length
 function calculateMaxTokens(text: string, length: Length): number {
   // Rough estimate: 1 token ≈ 4 characters in English
   const estimatedInputTokens = Math.ceil(text.length / 4);
   
+  // Adjust based on desired output length
   switch (length) {
     case 'Shorter':
-      return Math.max(50, Math.floor(estimatedInputTokens * 0.7)); // 70% of original
+      return Math.max(50, Math.floor(estimatedInputTokens * 0.7));
     case 'Same':
-      return Math.max(100, Math.floor(estimatedInputTokens * 1.2)); // 120% buffer
+      return Math.max(100, Math.floor(estimatedInputTokens * 1.2));
     case 'Longer':
-      return Math.max(150, Math.floor(estimatedInputTokens * 2)); // 200% of original
-    default:
-      return 500; // Default fallback
+      return Math.max(150, Math.floor(estimatedInputTokens * 2));
   }
 }
 
@@ -129,11 +127,11 @@ export async function* streamTextRewrite(
     });
     
     // Yield each chunk of the response as it arrives
+    let accumulatedText = '';
     for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content || "";
-      if (content) {
-        yield content;
-      }
+      const content = chunk.choices[0]?.delta?.content || '';
+      accumulatedText += content;
+      yield accumulatedText;
     }
   } catch (error) {
     console.error("Error streaming from OpenAI API:", error);
