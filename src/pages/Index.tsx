@@ -1,18 +1,12 @@
 
 "use client";
 
-import React from 'react';
-import TextRewriter from '@/components/text-rewriter/TextRewriter';
+import TextRewriter from "@/components/TextRewriter";
 
-const Index: React.FC = () => {
+export default function Index() {
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="container mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8">AI Text Rewriter</h1>
-        <TextRewriter />
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-screen py-2">
+      <TextRewriter />
     </div>
   );
-};
-
-export default Index;
+}
