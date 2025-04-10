@@ -23,6 +23,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import ToneLengthSelector from './ToneLengthSelector';
 import { Loader2, Sparkles, BookOpen, KeyRound, Info } from 'lucide-react';
 import { toast } from "sonner";
@@ -63,6 +69,7 @@ const TextRewriter: React.FC = () => {
   const [apiKey, setApiKey] = useState<string>('');
   const [showApiKeyDialog, setShowApiKeyDialog] = useState<boolean>(false);
   const [tempApiKey, setTempApiKey] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<string>('original');
   
   // Check for API key in localStorage on component mount
   useEffect(() => {
@@ -99,6 +106,7 @@ const TextRewriter: React.FC = () => {
       }
       
       toast.success("Text rewritten successfully!");
+      setActiveTab('rewritten'); // Switch to rewritten tab after completion
     } catch (error) {
       console.error("Error rewriting text:", error);
       toast.error("Error: Could not rewrite text. Check your API key and try again.");
@@ -116,6 +124,7 @@ const TextRewriter: React.FC = () => {
   const handleExampleSelect = (text: string) => {
     setInputText(text);
     setDisplayText('');
+    setActiveTab('original');
   };
 
   const handleApiKeySave = () => {
@@ -237,12 +246,13 @@ const TextRewriter: React.FC = () => {
               </DropdownMenu>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Input Text */}
-              <div>
-                <Label htmlFor="input-text" className="text-sm font-medium mb-1 block">Original Text</Label>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="original">Original</TabsTrigger>
+                <TabsTrigger value="rewritten">Rewritten</TabsTrigger>
+              </TabsList>
+              <TabsContent value="original">
                 <Textarea
-                  id="input-text"
                   placeholder={placeholderText}
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
@@ -250,13 +260,9 @@ const TextRewriter: React.FC = () => {
                   rows={12}
                   className="resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full min-h-[240px] md:min-h-[320px]"
                 />
-              </div>
-              
-              {/* Output Text */}
-              <div>
-                <Label htmlFor="output-text" className="text-sm font-medium mb-1 block">Rewritten Text</Label>
+              </TabsContent>
+              <TabsContent value="rewritten">
                 <Textarea
-                  id="output-text"
                   placeholder="Rewritten text will appear here..."
                   value={displayText}
                   readOnly
@@ -272,8 +278,8 @@ const TextRewriter: React.FC = () => {
                     <span>Streaming response...</span>
                   </div>
                 )}
-              </div>
-            </div>
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* ToneLengthSelector & Button Section */}
