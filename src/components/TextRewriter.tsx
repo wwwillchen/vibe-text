@@ -5,8 +5,8 @@ import React, { useState } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card"; // Import Card components
-import { Separator } from "@/components/ui/separator"; // Import Separator
+import { Card, CardContent } from "@/components/ui/card";
+// Separator removed
 import ToneLengthSelector from './ToneLengthSelector';
 import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from "sonner";
@@ -63,34 +63,36 @@ const TextRewriter: React.FC = () => {
         </p>
       </div>
 
-      {/* Wrap Textarea and ToneLengthSelector in a single Card */}
       <Card>
-        <CardContent className="p-4 md:p-6 space-y-4"> {/* Add padding and space */}
-          <div className="space-y-2">
+        {/* Use flex for layout, responsive direction, and gap */}
+        <CardContent className="p-4 md:p-6 flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+          {/* Textarea Section (takes up more space) */}
+          <div className="space-y-2 w-full md:flex-1">
             <Label htmlFor="input-text" className="sr-only">Your Text</Label>
             <Textarea
               id="input-text"
               placeholder="Paste your text here..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              rows={10} // Adjusted rows slightly
-              // Removed background and border, rely on Card styling
-              className="resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full"
+              rows={12} // Increased rows slightly for better vertical space
+              className="resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full h-full min-h-[240px] md:min-h-[288px]" // Ensure it fills height
             />
           </div>
 
-          <Separator className="my-4" /> {/* Add Separator */}
+          {/* Separator Removed */}
 
-          {/* ToneLengthSelector - remove its own padding/background */}
-          <ToneLengthSelector
-            selectedTone={selectedTone}
-            selectedLength={selectedLength}
-            onSelect={handleToneLengthSelect}
-          />
+          {/* ToneLengthSelector Section (fixed width on larger screens) */}
+          <div className="w-full md:w-auto flex justify-center md:justify-start">
+             <ToneLengthSelector
+               selectedTone={selectedTone}
+               selectedLength={selectedLength}
+               onSelect={handleToneLengthSelect}
+             />
+          </div>
         </CardContent>
       </Card>
 
-      <div className="flex flex-col items-center gap-4 pt-2"> {/* Reduced top padding */}
+      <div className="flex flex-col items-center gap-4 pt-2">
          <Button
            onClick={handleRewrite}
            disabled={isLoading || !inputText.trim()}

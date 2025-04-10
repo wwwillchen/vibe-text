@@ -107,50 +107,47 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
 
   return (
     // Removed outer div with padding/background
-    <div>
-      <h3 className="text-lg font-medium mb-4 text-center">Adjust Tone & Length</h3>
+    // Removed h3 heading
+    <div className="flex items-center justify-center space-x-4">
+      {/* Y-axis Labels (Tone) */}
+      <div className="flex flex-col justify-between items-end h-48 self-stretch py-1">
+        {tones.slice().reverse().map((tone) => (
+          <Label key={tone} className="text-xs text-muted-foreground">{tone}</Label>
+        ))}
+      </div>
 
-      <div className="flex items-center justify-center space-x-4">
-        {/* Y-axis Labels (Tone) */}
-        <div className="flex flex-col justify-between items-end h-48 self-stretch py-1">
-          {tones.slice().reverse().map((tone) => (
-            <Label key={tone} className="text-xs text-muted-foreground">{tone}</Label>
-          ))}
-        </div>
-
-        {/* Interactive Box */}
-        <div className="flex flex-col items-center">
+      {/* Interactive Box */}
+      <div className="flex flex-col items-center">
+        <div
+          ref={boxRef}
+          className={cn(
+            "relative w-48 h-48 rounded-md cursor-pointer overflow-hidden touch-none",
+            "bg-gradient-to-br from-blue-100/50 via-purple-100/50 to-pink-100/50", // Keep gradient
+            "border border-muted" // Add a subtle border for definition
+          )}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          // Removed onMouseLeave={handleMouseUp} - rely on global listener
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          // Removed onTouchEnd={handleTouchEnd} - rely on global listener
+        >
+          {/* Selection Indicator */}
           <div
-            ref={boxRef}
-            className={cn(
-              "relative w-48 h-48 rounded-md cursor-pointer overflow-hidden touch-none",
-              "bg-gradient-to-br from-blue-100/50 via-purple-100/50 to-pink-100/50", // Keep gradient
-              "border border-muted" // Add a subtle border for definition
-            )}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            // Removed onMouseLeave={handleMouseUp} - rely on global listener
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            // Removed onTouchEnd={handleTouchEnd} - rely on global listener
-          >
-            {/* Selection Indicator */}
-            <div
-              className="absolute w-3 h-3 bg-primary rounded-full border-2 border-primary-foreground shadow-md transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-              style={{
-                left: `${position[0]}%`,
-                top: `${position[1]}%`,
-                transition: isDragging ? 'none' : 'left 0.1s ease-out, top 0.1s ease-out',
-              }}
-              aria-hidden="true"
-            />
-          </div>
-          {/* X-axis Labels (Length) */}
-          <div className="flex justify-between w-48 mt-2 px-1">
-            {lengths.map((length) => (
-              <Label key={length} className="text-xs text-muted-foreground">{length}</Label>
-            ))}
-          </div>
+            className="absolute w-3 h-3 bg-primary rounded-full border-2 border-primary-foreground shadow-md transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+            style={{
+              left: `${position[0]}%`,
+              top: `${position[1]}%`,
+              transition: isDragging ? 'none' : 'left 0.1s ease-out, top 0.1s ease-out',
+            }}
+            aria-hidden="true"
+          />
+        </div>
+        {/* X-axis Labels (Length) */}
+        <div className="flex justify-between w-48 mt-2 px-1">
+          {lengths.map((length) => (
+            <Label key={length} className="text-xs text-muted-foreground">{length}</Label>
+          ))}
         </div>
       </div>
     </div>
