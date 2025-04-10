@@ -158,7 +158,7 @@ const TextRewriter: React.FC = () => {
             className="text-sm text-muted-foreground"
             style={textShadowStyle}
           >
-            Rewrite your text with the desired tone and length using OpenAI
+            Rewrite your text with the desired tone and length
           </CardDescription>
           
           {/* API Key Dialog */}
