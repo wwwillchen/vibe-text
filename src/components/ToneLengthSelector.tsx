@@ -1,7 +1,8 @@
 
+"use client";
+
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from "@/lib/utils";
-// Removed Card imports
 import { Label } from "@/components/ui/label";
 
 type Tone = 'Casual' | 'Neutral' | 'Professional';
@@ -20,6 +21,11 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
   const boxRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<[number, number]>([lengthToX[selectedLength], toneToY[selectedTone]]);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Update position if props change externally
+  useEffect(() => {
+    setPosition([lengthToX[selectedLength], toneToY[selectedTone]]);
+  }, [selectedTone, selectedLength]);
 
   const mapPositionToValues = (xPercent: number, yPercent: number): { tone: Tone; length: Length } => {
     let tone: Tone;
@@ -61,34 +67,49 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
   const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     setIsDragging(true);
     handleInteraction(event);
-    event.preventDefault();
+    event.preventDefault(); // Prevent text selection during drag
   };
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => { if (isDragging) handleInteraction(event); };
   const handleMouseUp = () => { if (isDragging) setIsDragging(false); };
-  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => { setIsDragging(true); handleInteraction(event); event.preventDefault(); };
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => { setIsDragging(true); handleInteraction(event); event.preventDefault(); }; // Prevent scroll on touch devices
   const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => { if (isDragging) handleInteraction(event); };
   const handleTouchEnd = () => { if (isDragging) setIsDragging(false); };
 
+  // Add global listeners to handle mouse up/touch end outside the component
   useEffect(() => {
-    const handleInteractionEndGlobal = () => { if (isDragging) setIsDragging(false); };
+    const handleInteractionEndGlobal = (event: MouseEvent | TouchEvent) => {
+      if (isDragging) {
+        // Check if the event target is outside the interactive box or its children
+        if (boxRef.current && !boxRef.current.contains(event.target as Node)) {
+           setIsDragging(false);
+        } else if (event.type === 'mouseup' || event.type === 'touchend') {
+           setIsDragging(false); // Always stop dragging on up/end events
+        }
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove as any); // Cast needed for broader event handling
+    window.addEventListener('touchmove', handleTouchMove as any);
     window.addEventListener('mouseup', handleInteractionEndGlobal);
     window.addEventListener('touchend', handleInteractionEndGlobal);
+
     return () => {
+      window.removeEventListener('mousemove', handleMouseMove as any);
+      window.removeEventListener('touchmove', handleTouchMove as any);
       window.removeEventListener('mouseup', handleInteractionEndGlobal);
       window.removeEventListener('touchend', handleInteractionEndGlobal);
     };
-  }, [isDragging]);
+  }, [isDragging, handleInteraction]); // Re-attach if isDragging or handleInteraction changes
+
 
   const tones: Tone[] = ['Casual', 'Neutral', 'Professional'];
   const lengths: Length[] = ['Shorter', 'Same', 'Longer'];
 
   return (
-    // Removed Card wrapper, using a simple div with padding
-    <div className="p-4 rounded-md bg-muted/40"> {/* Added background to group elements */}
-      {/* Removed CardHeader */}
-      <h3 className="text-lg font-medium mb-4 text-center">Adjust Tone & Length</h3> {/* Replaced CardTitle */}
+    // Removed outer div with padding/background
+    <div>
+      <h3 className="text-lg font-medium mb-4 text-center">Adjust Tone & Length</h3>
 
-      {/* Removed CardContent */}
       <div className="flex items-center justify-center space-x-4">
         {/* Y-axis Labels (Tone) */}
         <div className="flex flex-col justify-between items-end h-48 self-stretch py-1">
@@ -101,13 +122,17 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
         <div className="flex flex-col items-center">
           <div
             ref={boxRef}
-            // Removed border, adjusted background
-            className="relative w-48 h-48 bg-gradient-to-br from-blue-100/50 via-purple-100/50 to-pink-100/50 rounded-md cursor-pointer overflow-hidden touch-none"
+            className={cn(
+              "relative w-48 h-48 rounded-md cursor-pointer overflow-hidden touch-none",
+              "bg-gradient-to-br from-blue-100/50 via-purple-100/50 to-pink-100/50", // Keep gradient
+              "border border-muted" // Add a subtle border for definition
+            )}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseUp}
+            // Removed onMouseLeave={handleMouseUp} - rely on global listener
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
+            // Removed onTouchEnd={handleTouchEnd} - rely on global listener
           >
             {/* Selection Indicator */}
             <div

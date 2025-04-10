@@ -1,8 +1,12 @@
 
+"use client";
+
 import React, { useState } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card"; // Import Card components
+import { Separator } from "@/components/ui/separator"; // Import Separator
 import ToneLengthSelector from './ToneLengthSelector';
 import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from "sonner";
@@ -13,7 +17,9 @@ type Length = 'Shorter' | 'Same' | 'Longer';
 
 const rewriteText = async (text: string, tone: Tone, length: Length): Promise<string> => {
   console.log(`Rewriting text with Tone: ${tone}, Length: ${length}`);
+  // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1500));
+  // Simple mock response
   return `(Rewritten - Tone: ${tone}, Length: ${length})\n\n${text}`;
 };
 
@@ -57,37 +63,43 @@ const TextRewriter: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-        <div className="space-y-2">
-          <Label htmlFor="input-text" className="sr-only">Your Text</Label>
-          <Textarea
-            id="input-text"
-            placeholder="Paste your text here..."
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            rows={12}
-            className="resize-none border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 p-4 bg-muted/40 rounded-md"
+      {/* Wrap Textarea and ToneLengthSelector in a single Card */}
+      <Card>
+        <CardContent className="p-4 md:p-6 space-y-4"> {/* Add padding and space */}
+          <div className="space-y-2">
+            <Label htmlFor="input-text" className="sr-only">Your Text</Label>
+            <Textarea
+              id="input-text"
+              placeholder="Paste your text here..."
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              rows={10} // Adjusted rows slightly
+              // Removed background and border, rely on Card styling
+              className="resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full"
+            />
+          </div>
+
+          <Separator className="my-4" /> {/* Add Separator */}
+
+          {/* ToneLengthSelector - remove its own padding/background */}
+          <ToneLengthSelector
+            selectedTone={selectedTone}
+            selectedLength={selectedLength}
+            onSelect={handleToneLengthSelect}
           />
-        </div>
+        </CardContent>
+      </Card>
 
-        <ToneLengthSelector
-          selectedTone={selectedTone}
-          selectedLength={selectedLength}
-          onSelect={handleToneLengthSelect}
-        />
-      </div>
-
-      <div className="flex flex-col items-center gap-4 pt-4">
-         {/* Updated button classes for pink color */}
+      <div className="flex flex-col items-center gap-4 pt-2"> {/* Reduced top padding */}
          <Button
            onClick={handleRewrite}
            disabled={isLoading || !inputText.trim()}
            className={cn(
              "w-full md:w-64 h-11 px-8 text-base",
-             "bg-pink-500 text-white", // Set background to pink-500 and text to white
-             "hover:bg-pink-600", // Darken pink on hover
-             "focus-visible:ring-pink-400", // Adjust focus ring color
-             "disabled:opacity-70 disabled:cursor-not-allowed" // Keep disabled styles
+             "bg-pink-500 text-white",
+             "hover:bg-pink-600",
+             "focus-visible:ring-pink-400",
+             "disabled:opacity-70 disabled:cursor-not-allowed"
            )}
            size="lg"
          >
