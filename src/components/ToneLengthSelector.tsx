@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 
@@ -41,17 +41,22 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
     return { tone, length };
   };
 
-  const handleInteraction = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+  // Use useCallback to memoize the event handler functions
+  const handleInteraction = useCallback((event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement> | MouseEvent | TouchEvent) => {
     if (!boxRef.current) return;
     const rect = boxRef.current.getBoundingClientRect();
     let clientX, clientY;
+    
+    // Handle different event types
     if ('touches' in event && event.touches.length > 0) {
       clientX = event.touches[0].clientX;
       clientY = event.touches[0].clientY;
     } else if ('clientX' in event) {
       clientX = event.clientX;
       clientY = event.clientY;
-    } else { return; }
+    } else { 
+      return; 
+    }
 
     let x = clientX - rect.left;
     let y = clientY - rect.top;
@@ -62,36 +67,55 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
     setPosition([xPercent, yPercent]);
     const { tone, length } = mapPositionToValues(xPercent, yPercent);
     onSelect(tone, length);
-  };
+  }, [onSelect]);
 
-  const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     setIsDragging(true);
     handleInteraction(event);
     event.preventDefault(); // Prevent text selection during drag
-  };
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => { if (isDragging) handleInteraction(event); };
-  const handleMouseUp = () => { if (isDragging) setIsDragging(false); };
-  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => { setIsDragging(true); handleInteraction(event); event.preventDefault(); }; // Prevent scroll on touch devices
-  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => { if (isDragging) handleInteraction(event); };
-  const handleTouchEnd = () => { if (isDragging) setIsDragging(false); };
+  }, [handleInteraction]);
+
+  const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement> | MouseEvent) => { 
+    if (isDragging) handleInteraction(event as any); 
+  }, [isDragging, handleInteraction]);
+
+  const handleMouseUp = useCallback(() => { 
+    if (isDragging) setIsDragging(false); 
+  }, [isDragging]);
+
+  const handleTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => { 
+    setIsDragging(true); 
+    handleInteraction(event); 
+    event.preventDefault(); // Prevent scroll on touch devices
+  }, [handleInteraction]);
+
+  const handleTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement> | TouchEvent) => { 
+    if (isDragging) handleInteraction(event as any); 
+  }, [isDragging, handleInteraction]);
+
+  const handleTouchEnd = useCallback(() => { 
+    if (isDragging) setIsDragging(false); 
+  }, [isDragging]);
 
   // Add global listeners to handle mouse up/touch end outside the component
   useEffect(() => {
     const handleInteractionEndGlobal = (event: MouseEvent | TouchEvent) => {
       if (isDragging) {
-        // Check if the event target is outside the interactive box or its children
         if (boxRef.current && !boxRef.current.contains(event.target as Node)) {
-           setIsDragging(false);
+          setIsDragging(false);
         } else if (event.type === 'mouseup' || event.type === 'touchend') {
-           setIsDragging(false); // Always stop dragging on up/end events
+          setIsDragging(false);
         }
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove as any); // Cast needed for broader event handling
-    window.addEventListener('touchmove', handleTouchMove as any);
-    window.addEventListener('mouseup', handleInteractionEndGlobal);
-    window.addEventListener('touchend', handleInteractionEndGlobal);
+    // Only add global event listeners when dragging is active
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove as any);
+      window.addEventListener('touchmove', handleTouchMove as any);
+      window.addEventListener('mouseup', handleInteractionEndGlobal);
+      window.addEventListener('touchend', handleInteractionEndGlobal);
+    }
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove as any);
@@ -99,15 +123,12 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
       window.removeEventListener('mouseup', handleInteractionEndGlobal);
       window.removeEventListener('touchend', handleInteractionEndGlobal);
     };
-  }, [isDragging, handleInteraction]); // Re-attach if isDragging or handleInteraction changes
-
+  }, [isDragging, handleMouseMove, handleTouchMove]);
 
   const tones: Tone[] = ['Casual', 'Neutral', 'Professional'];
   const lengths: Length[] = ['Shorter', 'Same', 'Longer'];
 
   return (
-    // Removed outer div with padding/background
-    // Removed h3 heading
     <div className="flex items-center justify-center space-x-4">
       {/* Y-axis Labels (Tone) */}
       <div className="flex flex-col justify-between items-end h-48 self-stretch py-1">
@@ -122,15 +143,16 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
           ref={boxRef}
           className={cn(
             "relative w-48 h-48 rounded-md cursor-pointer overflow-hidden touch-none",
-            "bg-gradient-to-br from-blue-100/50 via-purple-100/50 to-pink-100/50", // Keep gradient
-            "border border-muted" // Add a subtle border for definition
+            "bg-gradient-to-br from-blue-100/50 via-purple-100/50 to-pink-100/50",
+            "border border-muted"
           )}
           onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          // Removed onMouseLeave={handleMouseUp} - rely on global listener
+          onMouseMove={(e) => isDragging && handleMouseMove(e)}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
           onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          // Removed onTouchEnd={handleTouchEnd} - rely on global listener
+          onTouchMove={(e) => isDragging && handleTouchMove(e)}
+          onTouchEnd={handleTouchEnd}
         >
           {/* Selection Indicator */}
           <div
