@@ -45,7 +45,6 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
     const rect = boxRef.current.getBoundingClientRect();
     let clientX, clientY;
     
-    // Handle different event types
     if ('touches' in event && event.touches.length > 0) {
       clientX = event.touches[0].clientX;
       clientY = event.touches[0].clientY;
@@ -70,7 +69,7 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
   const handleMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     setIsDragging(true);
     handleInteraction(event);
-    event.preventDefault(); // Prevent text selection during drag
+    event.preventDefault(); 
   }, [handleInteraction]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement> | MouseEvent) => { 
@@ -84,7 +83,7 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
   const handleTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => { 
     setIsDragging(true); 
     handleInteraction(event); 
-    event.preventDefault(); // Prevent scroll on touch devices
+    event.preventDefault(); 
   }, [handleInteraction]);
 
   const handleTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement> | TouchEvent) => { 
@@ -95,7 +94,7 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
     if (isDragging) setIsDragging(false); 
   }, [isDragging]);
 
-  // Add global listeners to handle mouse up/touch end outside the component
+  // Add global listeners
   useEffect(() => {
     const handleInteractionEndGlobal = (event: MouseEvent | TouchEvent) => {
       if (isDragging) {
@@ -107,7 +106,6 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
       }
     };
 
-    // Only add global event listeners when dragging is active
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove as any);
       window.addEventListener('touchmove', handleTouchMove as any);
@@ -131,48 +129,41 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
   const displayLengths = lengths.filter(length => length !== 'Same');
 
   return (
-    <div className="flex items-center justify-center space-x-4">
-      {/* Y-axis Labels (Tone) */}
-      <div className="flex flex-col justify-between items-end h-48 self-stretch py-1">
-        {displayTones.slice().reverse().map((tone) => (
-          <Label key={tone} className="text-xs text-muted-foreground">{tone}</Label>
-        ))}
-      </div>
-
+    <div className="flex items-center justify-center">
       {/* Interactive Box */}
-      <div className="flex flex-col items-center">
+      <div
+        ref={boxRef}
+        className={cn(
+          "relative w-64 h-64 rounded-md cursor-pointer overflow-hidden touch-none", // Increased size
+          "bg-gradient-to-br from-blue-100/50 via-purple-100/50 to-pink-100/50",
+          "border border-muted"
+        )}
+        onMouseDown={handleMouseDown}
+        onMouseMove={(e) => isDragging && handleMouseMove(e)}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={(e) => isDragging && handleTouchMove(e)}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Y-axis Labels (Tone) - Positioned Inside */}
+        <Label className="absolute left-2 top-2 text-xs text-muted-foreground transform -translate-y-1/2">Professional</Label>
+        <Label className="absolute left-2 bottom-2 text-xs text-muted-foreground transform translate-y-1/2">Casual</Label>
+        
+        {/* X-axis Labels (Length) - Positioned Inside */}
+        <Label className="absolute top-2 left-2 text-xs text-muted-foreground transform -translate-x-1/2 rotate-[-90deg] origin-top-left whitespace-nowrap" style={{ top: '50%', left: '8px' }}>Shorter</Label>
+        <Label className="absolute top-2 right-2 text-xs text-muted-foreground transform translate-x-1/2 rotate-[90deg] origin-top-right whitespace-nowrap" style={{ top: '50%', right: '8px' }}>Longer</Label>
+
+        {/* Selection Indicator */}
         <div
-          ref={boxRef}
-          className={cn(
-            "relative w-48 h-48 rounded-md cursor-pointer overflow-hidden touch-none",
-            "bg-gradient-to-br from-blue-100/50 via-purple-100/50 to-pink-100/50",
-            "border border-muted"
-          )}
-          onMouseDown={handleMouseDown}
-          onMouseMove={(e) => isDragging && handleMouseMove(e)}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          onTouchStart={handleTouchStart}
-          onTouchMove={(e) => isDragging && handleTouchMove(e)}
-          onTouchEnd={handleTouchEnd}
-        >
-          {/* Selection Indicator */}
-          <div
-            className="absolute w-3 h-3 bg-primary rounded-full border-2 border-primary-foreground shadow-md transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-            style={{
-              left: `${position[0]}%`,
-              top: `${position[1]}%`,
-              transition: isDragging ? 'none' : 'left 0.1s ease-out, top 0.1s ease-out',
-            }}
-            aria-hidden="true"
-          />
-        </div>
-        {/* X-axis Labels (Length) */}
-        <div className="flex justify-between w-48 mt-2 px-1">
-          {displayLengths.map((length) => (
-            <Label key={length} className="text-xs text-muted-foreground">{length}</Label>
-          ))}
-        </div>
+          className="absolute w-3 h-3 bg-primary rounded-full border-2 border-primary-foreground shadow-md transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+          style={{
+            left: `${position[0]}%`,
+            top: `${position[1]}%`,
+            transition: isDragging ? 'none' : 'left 0.1s ease-out, top 0.1s ease-out',
+          }}
+          aria-hidden="true"
+        />
       </div>
     </div>
   );
