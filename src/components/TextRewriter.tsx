@@ -4,8 +4,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import ToneLengthSelector from './ToneLengthSelector'; // Updated import name
+import ToneLengthSelector from './ToneLengthSelector';
 import { Loader2 } from 'lucide-react';
+import { toast } from "sonner"; // Import toast for notifications
 
 type Tone = 'Casual' | 'Neutral' | 'Professional';
 type Length = 'Shorter' | 'Same' | 'Longer';
@@ -21,33 +22,32 @@ const rewriteText = async (text: string, tone: Tone, length: Length): Promise<st
 
 const TextRewriter: React.FC = () => {
   const [inputText, setInputText] = useState<string>('');
-  const [outputText, setOutputText] = useState<string>('');
+  // Removed outputText state
   const [selectedTone, setSelectedTone] = useState<Tone>('Neutral');
   const [selectedLength, setSelectedLength] = useState<Length>('Same');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleRewrite = async () => {
     if (!inputText.trim()) {
-      // Maybe show a toast notification here?
+      toast.warning("Please enter some text to rewrite."); // Use toast notification
       console.warn("Input text is empty.");
       return;
     }
     setIsLoading(true);
-    setOutputText(''); // Clear previous output
+    // No need to clear outputText anymore
     try {
-      // Pass the currently selected discrete values
       const result = await rewriteText(inputText, selectedTone, selectedLength);
-      setOutputText(result);
+      setInputText(result); // Update the input text directly
+      toast.success("Text rewritten successfully!"); // Success toast
     } catch (error) {
       console.error("Error rewriting text:", error);
-      setOutputText("Error: Could not rewrite text.");
-      // Show error toast
+      toast.error("Error: Could not rewrite text."); // Error toast
+      // Optionally, you might want to revert inputText or leave the error message somewhere
     } finally {
       setIsLoading(false);
     }
   };
 
-  // This function now receives the mapped discrete values from the selector
   const handleToneLengthSelect = (tone: Tone, length: Length) => {
     setSelectedTone(tone);
     setSelectedLength(length);
@@ -59,7 +59,7 @@ const TextRewriter: React.FC = () => {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>AI Text Rewriter</CardTitle>
-          <CardDescription>Paste your text below, select the desired tone and length, then click Rewrite.</CardDescription>
+          <CardDescription>Paste your text, adjust tone/length, and click Rewrite. The text will be updated in place.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -73,7 +73,8 @@ const TextRewriter: React.FC = () => {
                 onChange={(e) => setInputText(e.target.value)}
                 rows={10}
                 className="resize-none"
-                disabled={isLoading}
+                // Input is no longer disabled during loading, allowing selection, but editing might be weird.
+                // Consider if disabling is preferred: disabled={isLoading}
               />
             </div>
 
@@ -91,24 +92,9 @@ const TextRewriter: React.FC = () => {
             {isLoading ? 'Rewriting...' : 'Rewrite Text'}
           </Button>
 
-           {/* Output Area */}
-           {outputText && (
-             <div className="w-full space-y-2 mt-4">
-               <Label htmlFor="output-text">Rewritten Text</Label>
-               <Textarea
-                 id="output-text"
-                 value={outputText}
-                 readOnly
-                 rows={10}
-                 className="resize-none bg-muted/40"
-                 placeholder="Rewritten text will appear here..."
-               />
-             </div>
-           )}
+           {/* Output Area Removed */}
         </CardFooter>
       </Card>
-
-
     </div>
   );
 };
