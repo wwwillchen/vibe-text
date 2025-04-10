@@ -129,12 +129,12 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
   const displayLengths = lengths.filter(length => length !== 'Same');
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex items-center justify-center w-full">
       {/* Interactive Box */}
       <div
         ref={boxRef}
         className={cn(
-          "relative w-64 h-64 rounded-md cursor-pointer overflow-hidden touch-none",
+          "relative w-full h-64 rounded-md cursor-pointer overflow-hidden touch-none",
           "bg-gradient-to-br from-blue-100/50 via-purple-100/50 to-pink-100/50",
           "border border-muted"
         )}
@@ -152,7 +152,7 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
         
         {/* X-axis Labels (Length) - Positioned Inside */}
         <Label className="absolute bottom-2 left-1/4 text-xs text-muted-foreground transform -translate-x-1/2">Shorter</Label>
-        <Label className="absolute bottom-2 right-2 text-xs text-muted-foreground">Longer</Label> {/* Changed from right-1/4 to right-2 */}
+        <Label className="absolute bottom-2 right-2 text-xs text-muted-foreground">Longer</Label>
 
         {/* Selection Indicator */}
         <div

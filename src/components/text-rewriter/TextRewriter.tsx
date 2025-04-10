@@ -129,8 +129,9 @@ const TextRewriter: React.FC = () => {
           />
         </CardHeader>
 
-        <CardContent className="p-4 pt-0 md:p-6 md:pt-0 flex flex-col md:flex-row gap-4 md:gap-6 items-center">
-          <div className="space-y-2 w-full md:flex-1">
+        <CardContent className="p-4 pt-0 md:p-6 md:pt-0 flex flex-col md:flex-row gap-4 md:gap-6">
+          {/* Text Input Section - 50% width */}
+          <div className="space-y-2 w-full md:w-1/2">
             <ExampleDropdown 
               onSelect={handleExampleSelect}
               examples={cannedExamples}
@@ -148,7 +149,8 @@ const TextRewriter: React.FC = () => {
             />
           </div>
 
-          <div className="w-full md:w-auto flex flex-col items-center md:items-stretch gap-4">
+          {/* Visualization Section - 50% width */}
+          <div className="w-full md:w-1/2 flex flex-col items-center justify-center gap-4">
             <ToneLengthSelector
               selectedTone={state.selectedTone}
               selectedLength={state.selectedLength}
