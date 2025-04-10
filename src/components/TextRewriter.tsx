@@ -47,7 +47,6 @@ const rewriteText = async (text: string, tone: Tone, length: Length): Promise<st
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1500));
   // Simple mock response based on tone/length
-  let prefix = `(Rewritten - Tone: ${tone}, Length: ${length})\n\n`;
   let modifiedText = text;
 
   if (length === 'Shorter') {
@@ -58,13 +57,11 @@ const rewriteText = async (text: string, tone: Tone, length: Length): Promise<st
 
   if (tone === 'Casual') {
     modifiedText = modifiedText.replace(/Regards/gi, 'Cheers').replace(/Sincerely/gi, 'Best').replace(/following up/gi, 'just checking in');
-    prefix = `(Casual rewrite - ${length})\n\nYo! `;
   } else if (tone === 'Professional') {
      modifiedText = modifiedText.replace(/Hey/gi, 'Dear Sir/Madam').replace(/Cheers/gi, 'Sincerely').replace(/just checking in/gi, 'following up');
-     prefix = `(Professional rewrite - ${length})\n\nEsteemed Colleague,\n\n`;
   }
 
-  return prefix + modifiedText;
+  return modifiedText;
 };
 
 const TextRewriter: React.FC = () => {
@@ -309,3 +306,4 @@ const TextRewriter: React.FC = () => {
 };
 
 export default TextRewriter;
+
