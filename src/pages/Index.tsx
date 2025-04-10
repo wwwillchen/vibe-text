@@ -1,15 +1,16 @@
 
-import React from 'react';
-import TextRewriter from '@/components/TextRewriter';
+import TextRewriter from "@/components/TextRewriter";
 
-const Index = () => {
+export default function Index() {
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
-        <TextRewriter />
-      </div>
+    <div 
+      className="min-h-screen w-full p-4"
+      style={{
+        backgroundImage: 'linear-gradient(to right, rgba(0, 0, 0, 0.02) 1px, transparent 1px)',
+        backgroundSize: '20px 100%'
+      }}
+    >
+      <TextRewriter />
     </div>
   );
-};
-
-export default Index;
+}
