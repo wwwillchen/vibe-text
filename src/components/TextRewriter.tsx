@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -304,12 +304,6 @@ const TextRewriter: React.FC = () => {
             </Button>
           </div>
         </CardContent>
-        
-        <CardFooter className="px-6 py-4 text-center text-sm text-muted-foreground">
-          <p className="w-full">
-            This app uses the OpenAI API to rewrite text. Your API key is stored locally in your browser.
-          </p>
-        </CardFooter>
       </Card>
     </div>
   );
