@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-// Separator removed
 import ToneLengthSelector from './ToneLengthSelector';
 import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from "sonner";
@@ -75,44 +74,43 @@ const TextRewriter: React.FC = () => {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               rows={12} // Increased rows slightly for better vertical space
-              className="resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full h-full min-h-[240px] md:min-h-[288px]" // Ensure it fills height
+              className="resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full h-full min-h-[240px] md:min-h-[320px]" // Adjusted min-height
             />
           </div>
 
-          {/* Separator Removed */}
-
-          {/* ToneLengthSelector Section (fixed width on larger screens) */}
-          <div className="w-full md:w-auto flex justify-center md:justify-start">
+          {/* ToneLengthSelector & Button Section */}
+          {/* Make this a flex column to stack selector and button */}
+          <div className="w-full md:w-auto flex flex-col items-center md:items-stretch gap-4">
              <ToneLengthSelector
                selectedTone={selectedTone}
                selectedLength={selectedLength}
                onSelect={handleToneLengthSelect}
              />
+             {/* Moved Button Here */}
+             <Button
+               onClick={handleRewrite}
+               disabled={isLoading || !inputText.trim()}
+               className={cn(
+                 "w-full h-11 px-8 text-base", // Make button full width of its container
+                 "bg-pink-500 text-white",
+                 "hover:bg-pink-600",
+                 "focus-visible:ring-pink-400",
+                 "disabled:opacity-70 disabled:cursor-not-allowed"
+               )}
+               size="lg"
+             >
+              {isLoading ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <Sparkles className="mr-2 h-5 w-5" />
+              )}
+              {isLoading ? 'Rewriting...' : 'Rewrite Text'}
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex flex-col items-center gap-4 pt-2">
-         <Button
-           onClick={handleRewrite}
-           disabled={isLoading || !inputText.trim()}
-           className={cn(
-             "w-full md:w-64 h-11 px-8 text-base",
-             "bg-pink-500 text-white",
-             "hover:bg-pink-600",
-             "focus-visible:ring-pink-400",
-             "disabled:opacity-70 disabled:cursor-not-allowed"
-           )}
-           size="lg"
-         >
-          {isLoading ? (
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          ) : (
-            <Sparkles className="mr-2 h-5 w-5" />
-          )}
-          {isLoading ? 'Rewriting...' : 'Rewrite Text'}
-        </Button>
-      </div>
+      {/* Removed the Button container from outside the card */}
     </div>
   );
 };
