@@ -1,11 +1,9 @@
 
-"use client";
-
-import TextRewriter from "@/components/TextRewriter";
+import TextRewriter from "@/components/text-rewriter/TextRewriter";
 
 export default function Index() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
+    <div className="min-h-screen w-full py-12 bg-pinstripe">
       <TextRewriter />
     </div>
   );
