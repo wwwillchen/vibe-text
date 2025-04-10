@@ -1,10 +1,10 @@
 
-import React from 'react';
-import TextRewriter from '@/components/TextRewriter';
+import TextRewriter from "@/components/TextRewriter";
 
-const Index: React.FC = () => {
+const Index = () => {
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    // Added background classes here for pinstripes
+    <div className="min-h-screen w-full bg-white bg-[repeating-linear-gradient(45deg,_theme(colors.slate.100)_0,_theme(colors.slate.100)_1px,_transparent_1px,_transparent_16px)] py-8">
       <TextRewriter />
     </div>
   );
