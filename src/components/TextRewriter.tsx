@@ -62,7 +62,8 @@ const TextRewriter: React.FC = () => {
         </p>
       </div>
 
-      <Card>
+      {/* Added shadow-md class here */}
+      <Card className="shadow-md">
         {/* Changed items-start to items-center */}
         <CardContent className="p-4 md:p-6 flex flex-col md:flex-row gap-6 md:gap-8 items-center">
           {/* Textarea Section (takes up more space) */}
