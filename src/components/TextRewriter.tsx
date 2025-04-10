@@ -3,9 +3,8 @@ import React, { useState } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-// Removed Card imports
 import ToneLengthSelector from './ToneLengthSelector';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react'; // Import Sparkles icon
 import { toast } from "sonner";
 
 type Tone = 'Casual' | 'Neutral' | 'Professional';
@@ -49,33 +48,27 @@ const TextRewriter: React.FC = () => {
   };
 
   return (
-    // Removed the outer Card component, using a simple div with padding
     <div className="container mx-auto p-4 max-w-4xl space-y-6">
-      {/* Removed CardHeader */}
-      <div className="text-center"> {/* Added text-center for title/description */}
+      <div className="text-center">
         <h1 className="text-2xl font-semibold tracking-tight mb-1">AI Text Rewriter</h1>
         <p className="text-sm text-muted-foreground">
           Paste your text, adjust tone/length, and click Rewrite. The text will be updated in place.
         </p>
       </div>
 
-      {/* Removed CardContent */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start"> {/* Added items-start */}
-        {/* Input Area */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
         <div className="space-y-2">
-          <Label htmlFor="input-text" className="sr-only">Your Text</Label> {/* Hide label visually but keep for accessibility */}
+          <Label htmlFor="input-text" className="sr-only">Your Text</Label>
           <Textarea
             id="input-text"
             placeholder="Paste your text here..."
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            rows={12} // Slightly increased rows
-            // Removed border and shadow for minimalism
+            rows={12}
             className="resize-none border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 p-4 bg-muted/40 rounded-md"
           />
         </div>
 
-        {/* Tone & Length Selector */}
         <ToneLengthSelector
           selectedTone={selectedTone}
           selectedLength={selectedLength}
@@ -83,10 +76,19 @@ const TextRewriter: React.FC = () => {
         />
       </div>
 
-      {/* Removed CardFooter */}
-      <div className="flex flex-col items-center gap-4 pt-4"> {/* Added padding-top */}
-         <Button onClick={handleRewrite} disabled={isLoading || !inputText.trim()} className="w-full md:w-auto">
-          {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+      <div className="flex flex-col items-center gap-4 pt-4">
+         {/* Updated Button: added size classes (h-11, px-8), width classes (w-full md:w-64), and Sparkles icon */}
+         <Button
+           onClick={handleRewrite}
+           disabled={isLoading || !inputText.trim()}
+           className="w-full md:w-64 h-11 px-8 text-base" // Increased size and width
+           size="lg" // Use shadcn size prop for consistency
+         >
+          {isLoading ? (
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> // Slightly larger spinner
+          ) : (
+            <Sparkles className="mr-2 h-5 w-5" /> // Added Sparkles icon
+          )}
           {isLoading ? 'Rewriting...' : 'Rewrite Text'}
         </Button>
       </div>
