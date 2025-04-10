@@ -54,8 +54,8 @@ const TextRewriter: React.FC = () => {
     console.log(`Selected Tone: ${tone}, Length: ${length}`);
   };
 
-  // Define text shadow style
-  const textShadowStyle = { textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)' };
+  // Define a more subtle text shadow style
+  const textShadowStyle = { textShadow: '0px 1px 1px rgba(0, 0, 0, 0.05)' };
 
   return (
     // Removed the outer header div
