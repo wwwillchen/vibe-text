@@ -5,7 +5,8 @@ import React, { useState } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+// Import CardHeader and CardTitle, CardDescription
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import ToneLengthSelector from './ToneLengthSelector';
 import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from "sonner";
@@ -53,21 +54,33 @@ const TextRewriter: React.FC = () => {
     console.log(`Selected Tone: ${tone}, Length: ${length}`);
   };
 
-  return (
-    <div className="container mx-auto p-4 max-w-4xl space-y-6">
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold tracking-tight mb-1">AI Text Rewriter</h1>
-        <p className="text-sm text-muted-foreground">
-          Rewrite your text with the desired tone and length
-        </p>
-      </div>
+  // Define text shadow style
+  const textShadowStyle = { textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)' };
 
+  return (
+    // Removed the outer header div
+    <div className="container mx-auto p-4 max-w-4xl">
       {/* Added shadow-md class here */}
       <Card className="shadow-md">
-        {/* Changed items-start to items-center */}
-        <CardContent className="p-4 md:p-6 flex flex-col md:flex-row gap-6 md:gap-8 items-center">
-          {/* Textarea Section (takes up more space) */}
-          {/* Removed h-full to allow natural height based on rows */}
+        {/* Moved Header inside Card using CardHeader */}
+        <CardHeader className="text-center pb-4"> {/* Added padding-bottom */}
+          <CardTitle
+            className="text-2xl font-semibold tracking-tight"
+            style={textShadowStyle} // Apply text shadow
+          >
+            AI Text Rewriter
+          </CardTitle>
+          <CardDescription
+            className="text-sm text-muted-foreground"
+            style={textShadowStyle} // Apply text shadow
+          >
+            Rewrite your text with the desired tone and length
+          </CardDescription>
+        </CardHeader>
+
+        {/* Content remains vertically centered */}
+        <CardContent className="p-4 pt-0 md:p-6 md:pt-0 flex flex-col md:flex-row gap-6 md:gap-8 items-center"> {/* Removed top padding */}
+          {/* Textarea Section */}
           <div className="space-y-2 w-full md:flex-1">
             <Label htmlFor="input-text" className="sr-only">Your Text</Label>
             <Textarea
@@ -76,24 +89,22 @@ const TextRewriter: React.FC = () => {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               rows={12}
-              className="resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full min-h-[240px] md:min-h-[320px]" // Keep min-height for consistency
+              className="resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full min-h-[240px] md:min-h-[320px]"
             />
           </div>
 
           {/* ToneLengthSelector & Button Section */}
-          {/* Ensure this column also aligns items appropriately if needed */}
           <div className="w-full md:w-auto flex flex-col items-center md:items-stretch gap-4">
              <ToneLengthSelector
                selectedTone={selectedTone}
                selectedLength={selectedLength}
                onSelect={handleToneLengthSelect}
              />
-             {/* Moved Button Here */}
              <Button
                onClick={handleRewrite}
                disabled={isLoading || !inputText.trim()}
                className={cn(
-                 "w-full h-11 px-8 text-base", // Make button full width of its container
+                 "w-full h-11 px-8 text-base",
                  "bg-pink-500 text-white",
                  "hover:bg-pink-600",
                  "focus-visible:ring-pink-400",
