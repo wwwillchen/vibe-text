@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { streamTextRewrite } from "@/lib/openai-service";
 import { Tone, Length, TextRewriterState } from './types';
@@ -106,12 +106,6 @@ const TextRewriter: React.FC = () => {
     <div className="container mx-auto p-4 max-w-4xl">
       <Card className="shadow-md">
         <CardHeader className="text-center pb-4">
-          <CardTitle
-            className="text-2xl font-semibold tracking-tight"
-            style={textShadowStyle}
-          >
-            AI Text Rewriter
-          </CardTitle>
           <CardDescription
             className="text-sm text-muted-foreground"
             style={textShadowStyle}
@@ -129,7 +123,7 @@ const TextRewriter: React.FC = () => {
           />
         </CardHeader>
 
-        <CardContent className="p-4 pt-0 md:p-6 md:pt-0 flex flex-col md:flex-row gap-4 md:gap-6 items-center"> {/* Reduced gap from 6/8 to 4/6 */}
+        <CardContent className="p-4 pt-0 md:p-6 md:pt-0 flex flex-col md:flex-row gap-4 md:gap-6 items-center">
           <div className="space-y-2 w-full md:flex-1">
             <ExampleDropdown 
               onSelect={handleExampleSelect}
