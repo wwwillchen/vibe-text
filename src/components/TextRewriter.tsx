@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import ToneLengthGrid from './ToneLengthGrid';
+import ToneLengthSelector from './ToneLengthSelector'; // Updated import name
 import { Loader2 } from 'lucide-react';
 
 type Tone = 'Casual' | 'Neutral' | 'Professional';
@@ -35,6 +35,7 @@ const TextRewriter: React.FC = () => {
     setIsLoading(true);
     setOutputText(''); // Clear previous output
     try {
+      // Pass the currently selected discrete values
       const result = await rewriteText(inputText, selectedTone, selectedLength);
       setOutputText(result);
     } catch (error) {
@@ -46,6 +47,7 @@ const TextRewriter: React.FC = () => {
     }
   };
 
+  // This function now receives the mapped discrete values from the selector
   const handleToneLengthSelect = (tone: Tone, length: Length) => {
     setSelectedTone(tone);
     setSelectedLength(length);
@@ -75,8 +77,8 @@ const TextRewriter: React.FC = () => {
               />
             </div>
 
-            {/* Tone & Length Grid */}
-            <ToneLengthGrid
+            {/* Tone & Length Selector */}
+            <ToneLengthSelector
               selectedTone={selectedTone}
               selectedLength={selectedLength}
               onSelect={handleToneLengthSelect}
@@ -112,4 +114,3 @@ const TextRewriter: React.FC = () => {
 };
 
 export default TextRewriter;
-
