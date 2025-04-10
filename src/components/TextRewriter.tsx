@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import ToneLengthSelector from './ToneLengthSelector';
 import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from "sonner";
-import { cn } from "@/lib/utils"; // Import cn utility
+import { cn } from "@/lib/utils";
 
 type Tone = 'Casual' | 'Neutral' | 'Professional';
 type Length = 'Shorter' | 'Same' | 'Longer';
@@ -78,17 +78,13 @@ const TextRewriter: React.FC = () => {
       </div>
 
       <div className="flex flex-col items-center gap-4 pt-4">
-         {/* Added gradient background classes */}
+         {/* Removed gradient classes, relying on default Button variant="primary" styles */}
          <Button
            onClick={handleRewrite}
            disabled={isLoading || !inputText.trim()}
            className={cn(
-             "w-full md:w-64 h-11 px-8 text-base text-white", // Ensure text is white for contrast
-             "bg-gradient-to-r from-purple-500 to-pink-500", // Gradient background
-             "hover:from-purple-600 hover:to-pink-600", // Hover state gradient
-             "focus-visible:ring-offset-2 focus-visible:ring-purple-400", // Adjusted focus ring
-             "transition-all duration-300 ease-in-out", // Smooth transition
-             "disabled:opacity-70 disabled:cursor-not-allowed" // Ensure disabled state looks okay
+             "w-full md:w-64 h-11 px-8 text-base" // Removed text-white, gradient, hover, focus classes
+             // Default primary button styles (bg-primary text-primary-foreground hover:bg-primary/90) will apply
            )}
            size="lg"
          >
