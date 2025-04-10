@@ -5,15 +5,43 @@ import React, { useState } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-// Import CardHeader and CardTitle, CardDescription
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+// Import DropdownMenu components
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import ToneLengthSelector from './ToneLengthSelector';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, BookOpen } from 'lucide-react'; // Added BookOpen icon
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 type Tone = 'Casual' | 'Neutral' | 'Professional';
 type Length = 'Shorter' | 'Same' | 'Longer';
+
+// Define canned examples
+const cannedExamples = [
+  {
+    label: "Follow-up Email",
+    text: `Subject: Following Up: Project Alpha\n\nHi Team,\n\nJust wanted to gently follow up on the action items from our meeting last Tuesday regarding Project Alpha. Could you please provide an update on your progress by end of day tomorrow?\n\nLet me know if you're facing any blockers.\n\nBest regards,\nSarah`
+  },
+  {
+    label: "Meeting Request",
+    text: `Subject: Meeting Request: Q4 Planning\n\nHello David,\n\nCould we schedule a brief 30-minute meeting sometime next week to discuss the initial planning for Q4 initiatives? Please let me know what time works best for you.\n\nThanks,\nMichael`
+  },
+  {
+    label: "Short Announcement",
+    text: `Quick update: The new coffee machine has arrived and is now operational in the break room. Enjoy!`
+  },
+  {
+    label: "Thank You Note",
+    text: `Hi Jennifer,\n\nThank you so much for your help with the presentation yesterday. Your insights were invaluable, and it really made a difference!\n\nBest,\nChris`
+  }
+];
 
 const rewriteText = async (text: string, tone: Tone, length: Length): Promise<string> => {
   console.log(`Rewriting text with Tone: ${tone}, Length: ${length}`);
@@ -72,41 +100,67 @@ const TextRewriter: React.FC = () => {
     console.log(`Selected Tone: ${tone}, Length: ${length}`);
   };
 
+  const handleExampleSelect = (text: string) => {
+    setInputText(text);
+    toast.info("Example loaded into text area.");
+  };
+
   // Define a more subtle text shadow style
   const textShadowStyle = { textShadow: '0px 1px 1px rgba(0, 0, 0, 0.05)' };
 
-  // Updated placeholder text
-  const placeholderText = `Example:\n\nSubject: Quick Question\n\nHey team,\n\nJust wanted to check in on the status of the Q3 report. Is it still on track for the EOD deadline?\n\nLet me know if there's anything I can do to help.\n\nThanks,\nAlex`;
+  // Placeholder text (can be kept or removed)
+  const placeholderText = `Paste your text here, or load an example...`;
 
   return (
-    // Removed the outer header div
     <div className="container mx-auto p-4 max-w-4xl">
-      {/* Added shadow-md class here */}
       <Card className="shadow-md">
-        {/* Moved Header inside Card using CardHeader */}
-        <CardHeader className="text-center pb-4"> {/* Added padding-bottom */}
+        <CardHeader className="text-center pb-4">
           <CardTitle
             className="text-2xl font-semibold tracking-tight"
-            style={textShadowStyle} // Apply text shadow
+            style={textShadowStyle}
           >
             AI Text Rewriter
           </CardTitle>
           <CardDescription
             className="text-sm text-muted-foreground"
-            style={textShadowStyle} // Apply text shadow
+            style={textShadowStyle}
           >
             Rewrite your text with the desired tone and length
           </CardDescription>
         </CardHeader>
 
-        {/* Content remains vertically centered */}
-        <CardContent className="p-4 pt-0 md:p-6 md:pt-0 flex flex-col md:flex-row gap-6 md:gap-8 items-center"> {/* Removed top padding */}
+        <CardContent className="p-4 pt-0 md:p-6 md:pt-0 flex flex-col md:flex-row gap-6 md:gap-8 items-center">
           {/* Textarea Section */}
           <div className="space-y-2 w-full md:flex-1">
+            {/* Dropdown Menu for Examples */}
+            <div className="flex justify-start mb-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Load Example
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuLabel>Select an Example</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {cannedExamples.map((example, index) => (
+                    <DropdownMenuItem
+                      key={index}
+                      onSelect={() => handleExampleSelect(example.text)}
+                      className="cursor-pointer"
+                    >
+                      {example.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
             <Label htmlFor="input-text" className="sr-only">Your Text</Label>
             <Textarea
               id="input-text"
-              placeholder={placeholderText} // Use the new placeholder variable
+              placeholder={placeholderText}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               rows={12}
