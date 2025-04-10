@@ -129,7 +129,7 @@ const TextRewriter: React.FC = () => {
           />
         </CardHeader>
 
-        <CardContent className="p-4 pt-0 md:p-6 md:pt-0 flex flex-col md:flex-row gap-6 md:gap-8 items-center">
+        <CardContent className="p-4 pt-0 md:p-6 md:pt-0 flex flex-col md:flex-row gap-4 md:gap-6 items-center"> {/* Reduced gap from 6/8 to 4/6 */}
           <div className="space-y-2 w-full md:flex-1">
             <ExampleDropdown 
               onSelect={handleExampleSelect}
