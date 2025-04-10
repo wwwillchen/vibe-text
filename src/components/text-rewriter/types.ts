@@ -7,18 +7,6 @@ export interface Example {
   text: string;
 }
 
-export interface ToneDescription {
-  tone: Tone;
-  description: string;
-  emoji: string;
-}
-
-export interface LengthDescription {
-  length: Length;
-  description: string;
-  emoji: string;
-}
-
 export interface TextRewriterState {
   inputText: string;
   displayText: string;

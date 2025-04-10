@@ -1,5 +1,5 @@
 
-import { Example, ToneDescription, LengthDescription } from './types';
+import { Example } from './types';
 
 export const cannedExamples: Example[] = [
   {
@@ -17,42 +17,6 @@ export const cannedExamples: Example[] = [
   {
     label: "Thank You Note",
     text: `Hi Jennifer,\n\nThank you so much for your help with the presentation yesterday. Your insights were invaluable, and it really made a difference!\n\nBest,\nChris`
-  }
-];
-
-export const toneDescriptions: ToneDescription[] = [
-  {
-    tone: 'Professional',
-    description: 'ULTRA-FORMAL and STRICTLY BUSINESS. Perfect for corporate communications, legal documents, and addressing CEOs.',
-    emoji: '🧐'
-  },
-  {
-    tone: 'Neutral',
-    description: 'PERFECTLY BALANCED communication. Neither too formal nor too casual.',
-    emoji: '😐'
-  },
-  {
-    tone: 'Casual',
-    description: 'SUPER RELAXED and FRIENDLY! Like chatting with your BFF! Uses slang and emojis liberally!',
-    emoji: '😎'
-  }
-];
-
-export const lengthDescriptions: LengthDescription[] = [
-  {
-    length: 'Shorter',
-    description: 'EXTREMELY CONCISE! Cuts your text down to the absolute bare minimum!',
-    emoji: '🔍'
-  },
-  {
-    length: 'Same',
-    description: 'Maintains approximately the same length as your original text.',
-    emoji: '⚖️'
-  },
-  {
-    length: 'Longer',
-    description: 'DRAMATICALLY EXPANDED! Adds extensive details, examples, and elaboration!',
-    emoji: '📚'
   }
 ];
 

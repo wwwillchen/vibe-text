@@ -5,9 +5,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Tone, Length } from './types';
-import { toneDescriptions, lengthDescriptions } from './constants';
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ToneLengthSelectorProps {
   selectedTone: Tone;
@@ -22,7 +19,6 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
   const boxRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<[number, number]>([lengthToX[selectedLength], toneToY[selectedTone]]);
   const [isDragging, setIsDragging] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
 
   // Update position if props change externally
   useEffect(() => {
@@ -72,7 +68,6 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
 
   const handleMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     setIsDragging(true);
-    setShowTooltip(true);
     handleInteraction(event);
     event.preventDefault(); 
   }, [handleInteraction]);
@@ -82,15 +77,11 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
   }, [isDragging, handleInteraction]);
 
   const handleMouseUp = useCallback(() => { 
-    if (isDragging) {
-      setIsDragging(false);
-      setTimeout(() => setShowTooltip(false), 1500);
-    }
+    if (isDragging) setIsDragging(false); 
   }, [isDragging]);
 
   const handleTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => { 
-    setIsDragging(true);
-    setShowTooltip(true);
+    setIsDragging(true); 
     handleInteraction(event); 
     event.preventDefault(); 
   }, [handleInteraction]);
@@ -100,10 +91,7 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
   }, [isDragging, handleInteraction]);
 
   const handleTouchEnd = useCallback(() => { 
-    if (isDragging) {
-      setIsDragging(false);
-      setTimeout(() => setShowTooltip(false), 1500);
-    }
+    if (isDragging) setIsDragging(false); 
   }, [isDragging]);
 
   // Add global listeners
@@ -112,10 +100,8 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
       if (isDragging) {
         if (boxRef.current && !boxRef.current.contains(event.target as Node)) {
           setIsDragging(false);
-          setTimeout(() => setShowTooltip(false), 1500);
         } else if (event.type === 'mouseup' || event.type === 'touchend') {
           setIsDragging(false);
-          setTimeout(() => setShowTooltip(false), 1500);
         }
       }
     };
@@ -135,35 +121,22 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
     };
   }, [isDragging, handleMouseMove, handleTouchMove]);
 
-  // Find the current tone and length descriptions
-  const currentToneDesc = toneDescriptions.find(t => t.tone === selectedTone);
-  const currentLengthDesc = lengthDescriptions.find(l => l.length === selectedLength);
+  const tones: Tone[] = ['Casual', 'Neutral', 'Professional'];
+  const lengths: Length[] = ['Shorter', 'Same', 'Longer'];
+
+  // Filter out 'Neutral' and 'Same' for display purposes only
+  const displayTones = tones.filter(tone => tone !== 'Neutral');
+  const displayLengths = lengths.filter(length => length !== 'Same');
 
   return (
-    <div className="flex flex-col items-center w-full space-y-4">
-      {/* Current Selection Display */}
-      <div className="flex flex-col items-center space-y-2 w-full">
-        <div className="flex items-center justify-center space-x-2">
-          <Badge variant="outline" className="text-lg px-3 py-1 font-semibold">
-            {currentToneDesc?.emoji} {selectedTone}
-          </Badge>
-          <span className="text-muted-foreground">+</span>
-          <Badge variant="outline" className="text-lg px-3 py-1 font-semibold">
-            {currentLengthDesc?.emoji} {selectedLength}
-          </Badge>
-        </div>
-        <p className="text-xs text-center text-muted-foreground max-w-xs">
-          {currentToneDesc?.description} + {currentLengthDesc?.description}
-        </p>
-      </div>
-
+    <div className="flex items-center justify-center w-full">
       {/* Interactive Box */}
       <div
         ref={boxRef}
         className={cn(
           "relative w-full h-64 rounded-md cursor-pointer overflow-hidden touch-none",
-          "bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100",
-          "border border-muted shadow-inner"
+          "bg-gradient-to-br from-blue-100/50 via-purple-100/50 to-pink-100/50",
+          "border border-muted"
         )}
         onMouseDown={handleMouseDown}
         onMouseMove={(e) => isDragging && handleMouseMove(e)}
@@ -173,71 +146,24 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
         onTouchMove={(e) => isDragging && handleTouchMove(e)}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Grid lines */}
-        <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
-          <div className="border-r border-b border-gray-200/50"></div>
-          <div className="border-r border-l border-b border-gray-200/50"></div>
-          <div className="border-l border-b border-gray-200/50"></div>
-          <div className="border-r border-t border-b border-gray-200/50"></div>
-          <div className="border-r border-l border-t border-b border-gray-200/50"></div>
-          <div className="border-l border-t border-b border-gray-200/50"></div>
-          <div className="border-r border-t border-gray-200/50"></div>
-          <div className="border-r border-l border-t border-gray-200/50"></div>
-          <div className="border-l border-t border-gray-200/50"></div>
-        </div>
+        {/* Y-axis Labels (Tone) - Positioned Inside */}
+        <Label className="absolute left-2 top-2 text-xs text-muted-foreground">Professional</Label>
+        <Label className="absolute left-2 bottom-8 text-xs text-muted-foreground">Casual</Label>
         
-        {/* Tone Labels (Y-axis) */}
-        <div className="absolute left-2 top-2 flex items-center">
-          <span className="text-xs font-bold text-blue-700">🧐 ULTRA-FORMAL</span>
-        </div>
-        <div className="absolute left-2 bottom-2 flex items-center">
-          <span className="text-xs font-bold text-pink-700">😎 SUPER CASUAL</span>
-        </div>
-        
-        {/* Length Labels (X-axis) */}
-        <div className="absolute bottom-2 left-1/4 transform -translate-x-1/2 text-xs font-bold text-purple-700">
-          🔍 TINY
-        </div>
-        <div className="absolute bottom-2 right-2 text-xs font-bold text-purple-700">
-          📚 MASSIVE
-        </div>
+        {/* X-axis Labels (Length) - Positioned Inside */}
+        <Label className="absolute bottom-2 left-1/4 text-xs text-muted-foreground transform -translate-x-1/2">Shorter</Label>
+        <Label className="absolute bottom-2 right-2 text-xs text-muted-foreground">Longer</Label>
 
-        {/* Selection Indicator with Tooltip */}
-        <TooltipProvider>
-          <Tooltip open={showTooltip || isDragging}>
-            <TooltipTrigger asChild>
-              <div
-                className={cn(
-                  "absolute w-5 h-5 bg-primary rounded-full border-2 border-white shadow-lg transform -translate-x-1/2 -translate-y-1/2 pointer-events-none",
-                  isDragging && "scale-125 transition-transform"
-                )}
-                style={{
-                  left: `${position[0]}%`,
-                  top: `${position[1]}%`,
-                  transition: isDragging ? 'none' : 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                }}
-                aria-hidden="true"
-              />
-            </TooltipTrigger>
-            <TooltipContent side="top" className="font-semibold">
-              {currentToneDesc?.emoji} {selectedTone} + {currentLengthDesc?.emoji} {selectedLength}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        {/* Quadrant Labels */}
-        <div className="absolute left-1/4 top-1/4 transform -translate-x-1/2 -translate-y-1/2 text-[10px] text-muted-foreground opacity-70">
-          Professional & Shorter
-        </div>
-        <div className="absolute right-1/4 top-1/4 transform translate-x-1/2 -translate-y-1/2 text-[10px] text-muted-foreground opacity-70">
-          Professional & Longer
-        </div>
-        <div className="absolute left-1/4 bottom-1/4 transform -translate-x-1/2 translate-y-1/2 text-[10px] text-muted-foreground opacity-70">
-          Casual & Shorter
-        </div>
-        <div className="absolute right-1/4 bottom-1/4 transform translate-x-1/2 translate-y-1/2 text-[10px] text-muted-foreground opacity-70">
-          Casual & Longer
-        </div>
+        {/* Selection Indicator */}
+        <div
+          className="absolute w-3 h-3 bg-primary rounded-full border-2 border-primary-foreground shadow-md transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+          style={{
+            left: `${position[0]}%`,
+            top: `${position[1]}%`,
+            transition: isDragging ? 'none' : 'left 0.1s ease-out, top 0.1s ease-out',
+          }}
+          aria-hidden="true"
+        />
       </div>
     </div>
   );

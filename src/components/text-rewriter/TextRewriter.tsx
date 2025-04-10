@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/com
 import { toast } from "sonner";
 import { streamTextRewrite } from "@/lib/openai-service";
 import { Tone, Length, TextRewriterState } from './types';
-import { cannedExamples, placeholderText, toneDescriptions, lengthDescriptions } from './constants';
+import { cannedExamples, placeholderText } from './constants';
 import { ApiKeyDialog } from './ApiKeyDialog';
 import { ExampleDropdown } from './ExampleDropdown';
 import { TextTabs } from './TextTabs';
@@ -69,20 +69,10 @@ const TextRewriter: React.FC = () => {
         setState(prev => ({ ...prev, displayText: chunk }));
       }
       
-      // Get the tone and length descriptions for the toast
-      const toneDesc = toneDescriptions.find(t => t.tone === state.selectedTone);
-      const lengthDesc = lengthDescriptions.find(l => l.length === state.selectedLength);
-      
-      toast.success(
-        `Text TRANSFORMED to ${toneDesc?.emoji} ${state.selectedTone} tone and ${lengthDesc?.emoji} ${state.selectedLength} length!`,
-        { duration: 4000 }
-      );
+      toast.success("Text rewritten successfully!");
     } catch (error) {
       console.error("Error rewriting text:", error);
-      toast.error("ERROR! Could not rewrite text. Check your API key and try again.", { 
-        duration: 5000,
-        style: { backgroundColor: '#fee2e2', color: '#b91c1c', fontWeight: 'bold' }
-      });
+      toast.error("Error: Could not rewrite text. Check your API key and try again.");
     } finally {
       setState(prev => ({ ...prev, isLoading: false, isStreaming: false }));
     }
@@ -90,15 +80,6 @@ const TextRewriter: React.FC = () => {
 
   const handleToneLengthSelect = (tone: Tone, length: Length) => {
     setState(prev => ({ ...prev, selectedTone: tone, selectedLength: length }));
-    
-    // Show a toast when the user changes the tone/length
-    const toneDesc = toneDescriptions.find(t => t.tone === tone);
-    const lengthDesc = lengthDescriptions.find(l => l.length === length);
-    
-    toast(`${toneDesc?.emoji} ${tone} + ${lengthDesc?.emoji} ${length} selected!`, {
-      duration: 1500,
-      position: 'bottom-center'
-    });
   };
 
   const handleExampleSelect = (text: string) => {
@@ -113,32 +94,29 @@ const TextRewriter: React.FC = () => {
         apiKey: state.tempApiKey,
         showApiKeyDialog: false
       }));
-      toast.success("API key saved! You're ready to TRANSFORM text!", {
-        duration: 3000,
-        style: { fontWeight: 'bold' }
-      });
+      toast.success("API key saved!");
     } else {
       toast.error("Please enter a valid API key.");
     }
   };
 
-  const textShadowStyle = { textShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' };
+  const textShadowStyle = { textShadow: '0px 1px 1px rgba(0, 0, 0, 0.05)' };
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
-      <Card className="shadow-xl border-2 border-gray-200">
+      <Card className="shadow-md">
         <CardHeader className="text-center pb-4">
           <CardTitle
-            className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-transparent bg-clip-text"
+            className="text-2xl font-semibold tracking-tight"
             style={textShadowStyle}
           >
-            ✨ EXTREME Text Transformer ✨
+            AI Text Rewriter
           </CardTitle>
           <CardDescription
             className="text-sm text-muted-foreground"
             style={textShadowStyle}
           >
-            Transform your boring text into AMAZING content with any tone and length!
+            Rewrite your text with the desired tone and length
           </CardDescription>
           
           <ApiKeyDialog
@@ -182,8 +160,6 @@ const TextRewriter: React.FC = () => {
               onClick={handleRewrite}
               disabled={state.isLoading || state.isStreaming || !state.inputText.trim() || !state.apiKey}
               isLoading={state.isLoading}
-              selectedTone={state.selectedTone}
-              selectedLength={state.selectedLength}
             />
           </div>
         </CardContent>
