@@ -49,7 +49,13 @@ const TextRewriter: React.FC = () => {
       return;
     }
     
-    setState(prev => ({ ...prev, isLoading: true, isStreaming: true, displayText: '' }));
+    setState(prev => ({ 
+      ...prev, 
+      isLoading: true, 
+      isStreaming: true, 
+      displayText: '',
+      activeTab: 'rewritten' // Switch to rewritten tab immediately
+    }));
     
     try {
       const streamGenerator = streamTextRewrite(
@@ -64,7 +70,6 @@ const TextRewriter: React.FC = () => {
       }
       
       toast.success("Text rewritten successfully!");
-      setState(prev => ({ ...prev, activeTab: 'rewritten' }));
     } catch (error) {
       console.error("Error rewriting text:", error);
       toast.error("Error: Could not rewrite text. Check your API key and try again.");
