@@ -4,8 +4,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import ToneLengthSelector from './ToneLengthSelector';
-import { Loader2, Sparkles } from 'lucide-react'; // Import Sparkles icon
+import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from "sonner";
+import { cn } from "@/lib/utils"; // Import cn utility
 
 type Tone = 'Casual' | 'Neutral' | 'Professional';
 type Length = 'Shorter' | 'Same' | 'Longer';
@@ -77,17 +78,24 @@ const TextRewriter: React.FC = () => {
       </div>
 
       <div className="flex flex-col items-center gap-4 pt-4">
-         {/* Updated Button: added size classes (h-11, px-8), width classes (w-full md:w-64), and Sparkles icon */}
+         {/* Added gradient background classes */}
          <Button
            onClick={handleRewrite}
            disabled={isLoading || !inputText.trim()}
-           className="w-full md:w-64 h-11 px-8 text-base" // Increased size and width
-           size="lg" // Use shadcn size prop for consistency
+           className={cn(
+             "w-full md:w-64 h-11 px-8 text-base text-white", // Ensure text is white for contrast
+             "bg-gradient-to-r from-purple-500 to-pink-500", // Gradient background
+             "hover:from-purple-600 hover:to-pink-600", // Hover state gradient
+             "focus-visible:ring-offset-2 focus-visible:ring-purple-400", // Adjusted focus ring
+             "transition-all duration-300 ease-in-out", // Smooth transition
+             "disabled:opacity-70 disabled:cursor-not-allowed" // Ensure disabled state looks okay
+           )}
+           size="lg"
          >
           {isLoading ? (
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> // Slightly larger spinner
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
           ) : (
-            <Sparkles className="mr-2 h-5 w-5" /> // Added Sparkles icon
+            <Sparkles className="mr-2 h-5 w-5" />
           )}
           {isLoading ? 'Rewriting...' : 'Rewrite Text'}
         </Button>
