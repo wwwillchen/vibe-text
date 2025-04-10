@@ -53,7 +53,7 @@ const TextRewriter: React.FC = () => {
       <div className="text-center">
         <h1 className="text-2xl font-semibold tracking-tight mb-1">AI Text Rewriter</h1>
         <p className="text-sm text-muted-foreground">
-          Paste your text, adjust tone/length, and click Rewrite. The text will be updated in place.
+          Rewrite your text with the desired tone and length
         </p>
       </div>
 
