@@ -19,8 +19,26 @@ const rewriteText = async (text: string, tone: Tone, length: Length): Promise<st
   console.log(`Rewriting text with Tone: ${tone}, Length: ${length}`);
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1500));
-  // Simple mock response
-  return `(Rewritten - Tone: ${tone}, Length: ${length})\n\n${text}`;
+  // Simple mock response based on tone/length
+  let prefix = `(Rewritten - Tone: ${tone}, Length: ${length})\n\n`;
+  let modifiedText = text;
+
+  if (length === 'Shorter') {
+    modifiedText = text.split('.').slice(0, Math.max(1, Math.floor(text.split('.').length / 2))).join('.') + (text.includes('.') ? '.' : '');
+  } else if (length === 'Longer') {
+    modifiedText = text + "\n\nAdditionally, we should consider the implications for future projects and ensure alignment across teams.";
+  }
+
+  if (tone === 'Casual') {
+    modifiedText = modifiedText.replace(/Regards/gi, 'Cheers').replace(/Sincerely/gi, 'Best').replace(/following up/gi, 'just checking in');
+    prefix = `(Casual rewrite - ${length})\n\nYo! `;
+  } else if (tone === 'Professional') {
+     modifiedText = modifiedText.replace(/Hey/gi, 'Dear Sir/Madam').replace(/Cheers/gi, 'Sincerely').replace(/just checking in/gi, 'following up');
+     prefix = `(Professional rewrite - ${length})\n\nEsteemed Colleague,\n\n`;
+  }
+
+
+  return prefix + modifiedText;
 };
 
 const TextRewriter: React.FC = () => {
@@ -57,6 +75,9 @@ const TextRewriter: React.FC = () => {
   // Define a more subtle text shadow style
   const textShadowStyle = { textShadow: '0px 1px 1px rgba(0, 0, 0, 0.05)' };
 
+  // Updated placeholder text
+  const placeholderText = `Example:\n\nSubject: Quick Question\n\nHey team,\n\nJust wanted to check in on the status of the Q3 report. Is it still on track for the EOD deadline?\n\nLet me know if there's anything I can do to help.\n\nThanks,\nAlex`;
+
   return (
     // Removed the outer header div
     <div className="container mx-auto p-4 max-w-4xl">
@@ -85,7 +106,7 @@ const TextRewriter: React.FC = () => {
             <Label htmlFor="input-text" className="sr-only">Your Text</Label>
             <Textarea
               id="input-text"
-              placeholder="Paste your text here..."
+              placeholder={placeholderText} // Use the new placeholder variable
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               rows={12}
