@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -65,15 +65,92 @@ const rewriteText = async (text: string, tone: Tone, length: Length): Promise<st
      prefix = `(Professional rewrite - ${length})\n\nEsteemed Colleague,\n\n`;
   }
 
-
   return prefix + modifiedText;
 };
 
 const TextRewriter: React.FC = () => {
   const [inputText, setInputText] = useState<string>('');
+  const [displayText, setDisplayText] = useState<string>('');
+  const [fullText, setFullText] = useState<string>('');
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [selectedTone, setSelectedTone] = useState<Tone>('Neutral');
   const [selectedLength, setSelectedLength] = useState<Length>('Same');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  
+  // Reference to store the streaming interval
+  const streamingIntervalRef = useRef<number | null>(null);
+
+  // Clean up interval on component unmount
+  useEffect(() => {
+    return () => {
+      if (streamingIntervalRef.current) {
+        clearInterval(streamingIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Effect to handle text streaming animation
+  useEffect(() => {
+    if (isStreaming && fullText) {
+      let currentIndex = 0;
+      
+      // Clear any existing interval
+      if (streamingIntervalRef.current) {
+        clearInterval(streamingIntervalRef.current);
+      }
+      
+      // Set initial empty display text
+      setDisplayText('');
+      
+      // Create new interval for streaming effect
+      const intervalId = window.setInterval(() => {
+        if (currentIndex < fullText.length) {
+          // Add next character to display text
+          setDisplayText(prev => prev + fullText[currentIndex]);
+          currentIndex++;
+          
+          // Vary the typing speed slightly for a more natural effect
+          if (currentIndex % 10 === 0) {
+            clearInterval(intervalId);
+            setTimeout(() => {
+              streamingIntervalRef.current = window.setInterval(intervalCallback, getRandomTypingSpeed());
+            }, getRandomPauseLength());
+          }
+        } else {
+          // End streaming when complete
+          setIsStreaming(false);
+          clearInterval(intervalId);
+          streamingIntervalRef.current = null;
+        }
+      }, getRandomTypingSpeed());
+      
+      // Store interval ID for cleanup
+      streamingIntervalRef.current = intervalId;
+      
+      // Callback function for the interval
+      function intervalCallback() {
+        if (currentIndex < fullText.length) {
+          setDisplayText(prev => prev + fullText[currentIndex]);
+          currentIndex++;
+        } else {
+          setIsStreaming(false);
+          clearInterval(streamingIntervalRef.current!);
+          streamingIntervalRef.current = null;
+        }
+      }
+    }
+  }, [isStreaming, fullText]);
+
+  // Helper functions for random typing speeds
+  const getRandomTypingSpeed = () => {
+    // Return a random number between 15-40ms for typing speed
+    return Math.floor(Math.random() * 25) + 15;
+  };
+  
+  const getRandomPauseLength = () => {
+    // Occasionally pause for 100-300ms (simulating thinking)
+    return Math.floor(Math.random() * 200) + 100;
+  };
 
   const handleRewrite = async () => {
     if (!inputText.trim()) {
@@ -81,10 +158,18 @@ const TextRewriter: React.FC = () => {
       console.warn("Input text is empty.");
       return;
     }
+    
     setIsLoading(true);
     try {
+      // Get the rewritten text
       const result = await rewriteText(inputText, selectedTone, selectedLength);
-      setInputText(result);
+      
+      // Store the full text but don't display it yet
+      setFullText(result);
+      
+      // Start streaming animation
+      setIsStreaming(true);
+      
       toast.success("Text rewritten successfully!");
     } catch (error) {
       console.error("Error rewriting text:", error);
@@ -101,8 +186,16 @@ const TextRewriter: React.FC = () => {
   };
 
   const handleExampleSelect = (text: string) => {
+    // Stop any ongoing streaming
+    if (streamingIntervalRef.current) {
+      clearInterval(streamingIntervalRef.current);
+      streamingIntervalRef.current = null;
+      setIsStreaming(false);
+    }
+    
     setInputText(text);
-    // Removed toast notification when loading an example
+    setDisplayText(text);
+    setFullText('');
   };
 
   // Define a more subtle text shadow style
@@ -161,11 +254,26 @@ const TextRewriter: React.FC = () => {
             <Textarea
               id="input-text"
               placeholder={placeholderText}
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              value={isStreaming ? displayText : inputText}
+              onChange={(e) => {
+                if (!isStreaming) {
+                  setInputText(e.target.value);
+                  setDisplayText(e.target.value);
+                }
+              }}
+              readOnly={isStreaming}
               rows={12}
-              className="resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full min-h-[240px] md:min-h-[320px]"
+              className={cn(
+                "resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full min-h-[240px] md:min-h-[320px]",
+                isStreaming && "cursor-default"
+              )}
             />
+            {isStreaming && (
+              <div className="text-xs text-muted-foreground mt-1 flex items-center">
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                <span>Streaming response...</span>
+              </div>
+            )}
           </div>
 
           {/* ToneLengthSelector & Button Section */}
@@ -177,7 +285,7 @@ const TextRewriter: React.FC = () => {
              />
              <Button
                onClick={handleRewrite}
-               disabled={isLoading || !inputText.trim()}
+               disabled={isLoading || isStreaming || !inputText.trim()}
                className={cn(
                  "w-full h-11 px-8 text-base",
                  "bg-pink-500 text-white",
