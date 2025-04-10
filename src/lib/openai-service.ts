@@ -125,7 +125,7 @@ export async function* streamTextRewrite(
     
     // Call the OpenAI API with streaming enabled
     const stream = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
