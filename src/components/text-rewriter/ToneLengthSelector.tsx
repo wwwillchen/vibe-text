@@ -126,11 +126,15 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
   const tones: Tone[] = ['Casual', 'Neutral', 'Professional'];
   const lengths: Length[] = ['Shorter', 'Same', 'Longer'];
 
+  // Filter out 'Neutral' and 'Same' for display purposes only
+  const displayTones = tones.filter(tone => tone !== 'Neutral');
+  const displayLengths = lengths.filter(length => length !== 'Same');
+
   return (
     <div className="flex items-center justify-center space-x-4">
       {/* Y-axis Labels (Tone) */}
       <div className="flex flex-col justify-between items-end h-48 self-stretch py-1">
-        {tones.slice().reverse().map((tone) => (
+        {displayTones.slice().reverse().map((tone) => (
           <Label key={tone} className="text-xs text-muted-foreground">{tone}</Label>
         ))}
       </div>
@@ -165,7 +169,7 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
         </div>
         {/* X-axis Labels (Length) */}
         <div className="flex justify-between w-48 mt-2 px-1">
-          {lengths.map((length) => (
+          {displayLengths.map((length) => (
             <Label key={length} className="text-xs text-muted-foreground">{length}</Label>
           ))}
         </div>
