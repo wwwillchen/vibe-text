@@ -1,6 +1,6 @@
 
-export type Tone = 'Casual' | 'Professional';
-export type Length = 'Shorter' | 'Longer';
+export type Tone = 'Casual' | 'Neutral' | 'Professional';
+export type Length = 'Shorter' | 'Same' | 'Longer';
 
 export interface Example {
   label: string;

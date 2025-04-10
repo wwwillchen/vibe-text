@@ -1,89 +1,138 @@
 
-// This file is assumed to exist but wasn't provided in the codebase
-// Adding a placeholder implementation that would work with the updated types
+import OpenAI from 'openai';
 
-import { Tone, Length } from "@/components/text-rewriter/types";
+type Tone = 'Casual' | 'Neutral' | 'Professional';
+type Length = 'Shorter' | 'Same' | 'Longer';
 
+// Initialize OpenAI with the user-provided API key
+function getOpenAIClient(apiKey: string) {
+  return new OpenAI({
+    apiKey: apiKey,
+    dangerouslyAllowBrowser: true // Only for demo purposes, in production use a backend
+  });
+}
+
+export async function rewriteTextWithOpenAI(
+  text: string, 
+  tone: Tone, 
+  length: Length,
+  apiKey: string
+): Promise<string> {
+  if (!apiKey) {
+    throw new Error("API key is required");
+  }
+
+  try {
+    const openai = getOpenAIClient(apiKey);
+    
+    // Create a prompt based on the selected tone and length
+    const prompt = createPrompt(text, tone, length);
+    
+    // Call the OpenAI API
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: prompt.systemPrompt
+        },
+        {
+          role: "user",
+          content: prompt.userPrompt
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: calculateMaxTokens(text, length),
+      stream: false
+    });
+
+    // Return the rewritten text
+    return response.choices[0]?.message?.content || "Sorry, I couldn't rewrite the text.";
+  } catch (error) {
+    console.error("Error calling OpenAI API:", error);
+    throw new Error("Failed to rewrite text with OpenAI");
+  }
+}
+
+// Helper function to create appropriate prompts based on tone and length
+function createPrompt(text: string, tone: Tone, length: Length) {
+  let systemPrompt = "You are an expert writing assistant that rewrites text to match specific tones and lengths while maintaining the original meaning.";
+  
+  // Add tone-specific instructions
+  switch (tone) {
+    case 'Casual':
+      systemPrompt += " Use a casual, conversational tone with relaxed language, contractions, and a friendly approach.";
+      break;
+    case 'Neutral':
+      systemPrompt += " Use a balanced, neutral tone that's neither too formal nor too casual.";
+      break;
+    case 'Professional':
+      systemPrompt += " Use a formal, professional tone with precise language, proper grammar, and a business-appropriate style.";
+      break;
+  }
+  
+  // Add length-specific instructions
+  switch (length) {
+    case 'Shorter':
+      systemPrompt += " Make the text more concise while preserving the key information.";
+      break;
+    case 'Same':
+      systemPrompt += " Keep approximately the same length as the original text.";
+      break;
+    case 'Longer':
+      systemPrompt += " Expand on the original text with additional relevant details or explanations.";
+      break;
+  }
+  
+  // Create the user prompt
+  const userPrompt = `Please rewrite the following text:\n\n${text}`;
+  
+  return { systemPrompt, userPrompt };
+}
+
+// Function to stream responses from OpenAI
 export async function* streamTextRewrite(
   text: string,
   tone: Tone,
   length: Length,
   apiKey: string
 ): AsyncGenerator<string> {
-  const url = "https://api.openai.com/v1/chat/completions";
-  
-  const systemPrompt = `You are an expert text rewriter. Rewrite the provided text with the following characteristics:
-- Tone: ${tone} (${tone === 'Professional' ? 'formal, business-like' : 'informal, conversational'})
-- Length: ${length} (${length === 'Shorter' ? 'more concise than the original' : 'more detailed than the original'})
-Maintain the original meaning and key information while adjusting the style as requested.`;
-
-  const payload = {
-    model: "gpt-3.5-turbo",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: text }
-    ],
-    stream: true,
-    temperature: 0.7,
-    max_tokens: 1000
-  };
+  if (!apiKey) {
+    throw new Error("API key is required");
+  }
 
   try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || "API request failed");
-    }
-
-    if (!response.body) {
-      throw new Error("Response body is null");
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
-    let accumulatedText = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      
-      buffer += decoder.decode(value, { stream: true });
-      
-      // Process complete lines from the buffer
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || ""; // Keep the last incomplete line in the buffer
-      
-      for (const line of lines) {
-        const trimmedLine = line.trim();
-        if (!trimmedLine || trimmedLine === "data: [DONE]") continue;
-        
-        try {
-          // Extract the data part
-          const jsonStr = trimmedLine.replace(/^data: /, "");
-          const json = JSON.parse(jsonStr);
-          
-          // Extract content from the delta
-          const content = json.choices[0]?.delta?.content || "";
-          if (content) {
-            accumulatedText += content;
-            yield accumulatedText;
-          }
-        } catch (e) {
-          console.error("Error parsing JSON from stream:", e);
+    const openai = getOpenAIClient(apiKey);
+    
+    // Create a prompt based on the selected tone and length
+    const prompt = createPrompt(text, tone, length);
+    
+    // Call the OpenAI API with streaming enabled
+    const stream = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: prompt.systemPrompt
+        },
+        {
+          role: "user",
+          content: prompt.userPrompt
         }
-      }
+      ],
+      temperature: 0.7,
+      stream: true
+    });
+    
+    // Yield each chunk of the response as it arrives
+    let accumulatedText = '';
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || '';
+      accumulatedText += content;
+      yield accumulatedText;
     }
   } catch (error) {
-    console.error("Error in streamTextRewrite:", error);
-    throw error;
+    console.error("Error streaming from OpenAI API:", error);
+    throw new Error("Failed to stream text rewrite from OpenAI");
   }
 }
