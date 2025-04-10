@@ -148,7 +148,7 @@ const ToneLengthSelector: React.FC<ToneLengthSelectorProps> = ({ selectedTone, s
       >
         {/* Y-axis Labels (Tone) - Positioned Inside */}
         <Label className="absolute left-2 top-2 text-xs text-muted-foreground">Professional</Label>
-        <Label className="absolute left-2 bottom-2 text-xs text-muted-foreground">Casual</Label>
+        <Label className="absolute left-2 bottom-8 text-xs text-muted-foreground">Casual</Label> {/* Changed from bottom-2 to bottom-8 */}
         
         {/* X-axis Labels (Length) - Positioned Inside */}
         <Label className="absolute bottom-2 left-1/4 text-xs text-muted-foreground transform -translate-x-1/2">Shorter</Label>
