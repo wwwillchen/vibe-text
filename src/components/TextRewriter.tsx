@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-// Import DropdownMenu components
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ToneLengthSelector from './ToneLengthSelector';
-import { Loader2, Sparkles, BookOpen } from 'lucide-react'; // Added BookOpen icon
+import { Loader2, Sparkles, BookOpen } from 'lucide-react';
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
